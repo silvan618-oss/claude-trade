@@ -170,7 +170,7 @@ Begründung:
 **Mittelfristig: Option B als Evolution, nicht als Start.**
 Das Gesicht-vorne-Format ist die stärkste Differenzierung, aber starte es erst, wenn der neue faceless Account das Format validiert hat. Dann kennst du die Hooks der Nische bereits und setzt dein Gesicht als Verstärker obendrauf – nicht als Experiment.
 
-**Option D nur bei echter Eigenmotivation** – dann aber mit Coaching/Programm-Backend von Tag 1 gedacht, nicht als View-Business.
+**Option D: gestrichen (Entscheidung 08/2026).** Das Geschäftsmodell hängt an Brand Deals bzw. Coaching-Verkauf – die Abhängigkeit von Kooperationen ist nicht gewollt. Fokus liegt damit auf A/C (Start) und B (Evolution), deren Einnahmen primär über Creator Funds und skalierbare Views laufen.
 
 ### 90-Tage-Testplan (für A oder C)
 
