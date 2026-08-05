@@ -1,0 +1,70 @@
+# povflow configuration
+# Diese Datei ist die einzige, die du normalerweise anfassen musst.
+
+[channel]
+# Die Nische. Freitext — landet direkt im Ideen-Prompt.
+niche = "fantasy creature encounters"
+
+# Bildwelt. Verfuegbar: "fantasy", "wildlife", "urban", "survival"
+style_preset = "fantasy"
+
+audience = "TikTok und Reels, 16-30"
+
+# Sprache des Voice-over-Skripts.
+language = "de"
+
+# Der wichtigste Regler fuer Ideen-Qualitaet. Je konkreter, desto besser.
+concept_brief = """
+Wiederkehrende Serie: Ich filme mit dem Handy Begegnungen mit Kreaturen,
+die es nicht geben duerfte. Immer erste Person, immer so, als waere es
+echtes Material. Kein Fantasy-Kitsch, keine Ritter, keine Magie-Effekte.
+Die Kreatur wirkt wie ein echtes Tier: schwer, unberechenbar, gefaehrlich.
+Jede Folge endet, bevor klar ist, wie es ausgeht.
+"""
+
+# Kommt garantiert nie vor.
+forbidden = [
+  "Blut, Verletzungen, Leichen",
+  "echte Marken oder Logos",
+  "Kinder",
+  "erkennbare reale Personen",
+]
+
+[video]
+# Veo 3.1. "fast" ist deutlich guenstiger und fuer Shorts gut genug.
+# Alternative: "veo-3.1-generate-preview" (bessere Qualitaet, 2-4x teurer)
+model = "veo-3.1-fast-generate-preview"
+
+# Modell fuer die Ideen-Generierung (guenstig, nur Text).
+idea_model = "gemini-2.5-flash"
+
+resolution = "720p"      # "720p" oder "1080p"
+aspect_ratio = "9:16"    # Hochkant fuer TikTok/Reels/Shorts
+
+seconds_per_shot = 8     # Veo liefert 8s-Clips
+shots_per_episode = 5    # 5 x 8s = 40s Video
+
+# Umgebungsgeraeusche bleiben als Bett unter deinem Voice-over liegen.
+# Auf false setzen, wenn du komplett stumme Clips willst.
+keep_ambient_audio = true
+ambient_audio_gain_db = -18.0
+
+[costs]
+# Harte Obergrenzen. Die Pipeline bricht ab, bevor sie diese reisst.
+max_usd_per_run = 6.0
+max_usd_per_month = 120.0
+
+# Preise pro Sekunde (Stand August 2026). Anpassen, falls Google sie aendert.
+[costs.rates]
+"veo-3.1-fast-generate-preview:720p" = 0.10
+"veo-3.1-fast-generate-preview:1080p" = 0.12
+"veo-3.1-generate-preview:720p" = 0.20
+"veo-3.1-generate-preview:1080p" = 0.40
+
+[paths]
+output_dir = "output"
+state_db = "state/povflow.sqlite3"
+
+[runtime]
+poll_interval_s = 15
+max_retries = 3

@@ -1,0 +1,12 @@
+# Secrets
+.env
+
+# Generierte Videos, Skripte und Verlaufsdatenbank
+output/
+state/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/

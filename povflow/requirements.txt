@@ -1,0 +1,2 @@
+# Die einzige externe Abhaengigkeit. Alles andere kommt aus der Standardbibliothek.
+google-genai>=1.0.0
