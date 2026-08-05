@@ -46,13 +46,19 @@ Der Unterschied ist erheblich:
 
 | | Pro Sekunde | 40s-Folge | 30 Folgen/Monat |
 |---|---|---|---|
-| **Flow mit Credits** (2500 für 27,99 €) | ~0,011 € | **0,45 €** | **13 €** |
+| **Flow mit Credits** (2500 für 27,99 €) | ~0,017 € | **0,67 €** | **20 €** |
 | **Gemini API** (Omni Flash, 0,10 $/s) | ~0,093 € | 3,70 € | 119 € |
 
-Das ist Faktor **8**. 2500 Credits decken etwa **62 Folgen à 40 Sekunden** pro
-Monat ab — mehr als zwei pro Tag.
+Das ist Faktor **5,5**. 2500 Credits decken etwa **41 Folgen à 40 Sekunden** pro
+Monat ab — gut eine pro Tag.
 
 Deshalb ist der Standard hier nicht Vollautomatik, sondern der Hybrid-Modus.
+
+**Wichtig für die Einstellungen:** Flow rechnet **pro Generierung** ab, nicht pro
+Sekunde — 15 Credits pro Clip von bis zu 10 Sekunden. Ein 8-Sekunden-Shot kostet
+also exakt dasselbe wie ein 10-Sekunden-Shot. Deshalb steht die Standardkonfiguration
+auf `seconds_per_shot = 10`: gleiche Kosten, 25 % mehr Video. `povflow costs`
+warnt dich, wenn du Sekunden verschenkst.
 
 ## Die drei Backends
 
@@ -191,10 +197,11 @@ python3 -m povflow.cli history
 `povflow costs` rechnet dir das für deine aktuelle Konfiguration aus — im
 Hybrid-Modus in Credits, bei den API-Backends in Dollar.
 
-**Hybrid-Modus (Credits):** 1 Credit pro Sekunde, also 40 Credits für eine
-40-Sekunden-Folge ≈ 0,45 €. Deine 2500 Credits reichen für ~62 Folgen im Monat.
-Trag dein Abo unter `[costs.credits]` in der `config.toml` ein, dann stimmt die
-Anzeige.
+**Hybrid-Modus (Credits):** 15 Credits pro Clip bis 10 Sekunden. Eine Folge aus
+4 Shots kostet also 60 Credits ≈ 0,67 €, und deine 2500 Credits reichen für ~41
+Folgen im Monat. Trag dein Abo unter `[costs.credits]` in der `config.toml` ein,
+dann stimmt die Anzeige. Falls dein Plan doch pro Sekunde abrechnet:
+`credits_per_clip = 0` setzen und `credits_per_second` eintragen.
 
 **API-Backends**, Preise Gemini API Stand August 2026, pro Sekunde Ausgabe:
 
@@ -245,8 +252,10 @@ Schreib rein, was die Serie ausmacht, und vor allem, was sie *nicht* sein soll.
 sich.
 
 **`shots_per_episode` und `seconds_per_shot`** — steuern Länge und Preis direkt.
-5 × 8 s = 40 s ist ein guter Startwert für TikTok. Bei Omni sind 3–10 s pro Shot
-erlaubt; längere Shots bedeuten weniger Kettenglieder und damit weniger Drift.
+4 × 10 s = 40 s ist der Startwert für TikTok. `seconds_per_shot` solltest du im
+Hybrid-Modus auf 10 lassen: Kürzere Shots kosten dieselben 15 Credits, bringen
+aber weniger Video. Willst du längere Folgen, erhöhe `shots_per_episode` — jeder
+zusätzliche Shot kostet 15 Credits und bringt 10 Sekunden.
 
 Der Look selbst steckt in `povflow/style.py`. Da ist die "Style-DNA" definiert,
 die in jeden einzelnen Shot-Prompt eingebaut wird: Handkamera, Autofokus-Suchen,
@@ -341,7 +350,8 @@ mittig auf 9:16 zu. In der Ausgabe steht dann `got 1280x720, cropping to 720x128
 python3 -m unittest discover -s tests -v
 ```
 
-57 Tests, decken Konfiguration und Backend-Limits, Credit- und Dollar-Kostenlogik
-inklusive Chaining-Aufschlag, Omni-Request-Aufbau, das Hand-off-Blatt,
-Clip-Erkennung beim Zusammenfügen, Ideen-Parsing, Dedup, Prompt-Aufbau,
-ffmpeg-Kommandos und Voice-over-Timing ab.
+61 Tests, decken Konfiguration und Backend-Limits, Credit-Abrechnung pro Clip und
+pro Sekunde, Dollar-Kostenlogik inklusive Chaining-Aufschlag, Omni-Request-Aufbau,
+das Hand-off-Blatt, Clip-Erkennung beim Zusammenfügen, Ideen-Parsing, Dedup,
+Prompt-Aufbau, ffmpeg-Kommandos und Voice-over-Timing ab. Die mitgelieferte
+`config.toml` wird mitgetestet, damit die dokumentierten Kosten stimmen.

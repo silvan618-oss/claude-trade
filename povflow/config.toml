@@ -59,8 +59,10 @@ idea_model = "gemini-2.5-flash"
 resolution = "1080p"
 aspect_ratio = "9:16"    # Hochkant fuer TikTok/Reels/Shorts
 
-seconds_per_shot = 8     # Omni: 3-10s erlaubt. Veo: 8s.
-shots_per_episode = 5    # 5 x 8s = 40s Video
+# Flow rechnet pro Generierung ab, nicht pro Sekunde: ein 8s-Clip kostet
+# genauso viel wie ein 10s-Clip. Also immer die vollen 10s ausreizen.
+seconds_per_shot = 10    # Omni: 3-10s erlaubt. Veo: 8s.
+shots_per_episode = 4    # 4 x 10s = 40s Video
 
 # Umgebungsgeraeusche bleiben als Bett unter deinem Voice-over liegen.
 # Auf false setzen, wenn du komplett stumme Clips willst.
@@ -75,9 +77,14 @@ max_usd_per_month = 120.0
 
 # Dein Flow-Abo. Wird nur zur Anzeige benutzt (povflow costs), nicht abgerechnet.
 [costs.credits]
-credits_per_second = 1.0   # 15s Video = 15 Credits
+credits_per_clip = 15       # 15 Credits pro generiertem Clip
+clip_credit_seconds = 10    # ... fuer bis zu 10 Sekunden
 plan_eur = 27.99
 plan_credits = 2500
+
+# Alternative, falls dein Plan doch pro Sekunde abrechnet: credits_per_clip auf 0
+# setzen und hier den Sekundenpreis eintragen.
+credits_per_second = 0.0
 
 # Ausgabe-Preise pro Sekunde (Stand August 2026).
 # Anpassen, falls Google sie aendert.

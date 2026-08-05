@@ -68,7 +68,9 @@ class Config:
     max_usd_per_month: float
     rates: dict[str, float]
 
+    credits_per_clip: float
     credits_per_second: float
+    clip_credit_seconds: float
     plan_eur: float
     plan_credits: int
 
@@ -107,7 +109,19 @@ class Config:
 
     @property
     def credits_per_episode(self) -> float:
+        # Flow bills per generation, not per second: a 6s clip and a 10s clip
+        # cost the same. credits_per_second stays available for plans that really
+        # do meter by duration.
+        if self.credits_per_clip:
+            return self.credits_per_clip * self.shots_per_episode
         return self.credits_per_second * self.episode_seconds
+
+    @property
+    def wasted_seconds_per_clip(self) -> float:
+        """Seconds paid for but not used, when a shot is shorter than a clip."""
+        if not self.credits_per_clip or not self.clip_credit_seconds:
+            return 0.0
+        return max(0.0, self.clip_credit_seconds - self.seconds_per_shot)
 
     @property
     def eur_per_episode_credits(self) -> float:
@@ -204,7 +218,9 @@ def load_config(config_path: Path, env_path: Path | None = None) -> Config:
         max_usd_per_run=float(costs.get("max_usd_per_run", 6.0)),
         max_usd_per_month=float(costs.get("max_usd_per_month", 120.0)),
         rates=rates,
-        credits_per_second=float(credits.get("credits_per_second", 1.0)),
+        credits_per_clip=float(credits.get("credits_per_clip", 15.0)),
+        credits_per_second=float(credits.get("credits_per_second", 0.0)),
+        clip_credit_seconds=float(credits.get("clip_credit_seconds", 10.0)),
         plan_eur=float(credits.get("plan_eur", 27.99)),
         plan_credits=int(credits.get("plan_credits", 2500)),
         output_dir=_path(paths.get("output_dir", "output")),

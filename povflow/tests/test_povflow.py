@@ -112,7 +112,9 @@ MANUAL_CONFIG = BASE_CONFIG.replace(
     'backend = "veo"', 'backend = "manual"'
 ) + """
 [costs.credits]
-credits_per_second = 1.0
+credits_per_clip = 15
+clip_credit_seconds = 10
+credits_per_second = 0.0
 plan_eur = 27.99
 plan_credits = 2500
 """
@@ -131,12 +133,33 @@ class TestManualBackend(unittest.TestCase):
         self.assertEqual(self.cfg.usd_per_second, 0.0)
         self.assertEqual(self.cfg.usd_per_episode, 0.0)
 
-    def test_credit_maths_matches_the_plan(self):
+    def test_credit_maths_bills_per_clip_not_per_second(self):
         self.assertAlmostEqual(self.cfg.eur_per_credit, 27.99 / 2500)
-        # 5 shots x 8s at 1 credit/s
-        self.assertAlmostEqual(self.cfg.credits_per_episode, 40.0)
-        self.assertAlmostEqual(self.cfg.eur_per_episode_credits, 40 * 27.99 / 2500)
-        self.assertEqual(self.cfg.episodes_per_plan, 62)
+        # 5 shots at 15 credits each, regardless of the 8s length.
+        self.assertAlmostEqual(self.cfg.credits_per_episode, 75.0)
+        self.assertAlmostEqual(self.cfg.eur_per_episode_credits, 75 * 27.99 / 2500)
+        self.assertEqual(self.cfg.episodes_per_plan, 33)
+
+    def test_short_shots_report_wasted_seconds(self):
+        # 8s shots on a 10s clip allowance throw away 2s per generation.
+        self.assertAlmostEqual(self.cfg.wasted_seconds_per_clip, 2.0)
+
+    def test_full_length_shots_waste_nothing(self):
+        body = MANUAL_CONFIG.replace("seconds_per_shot = 8", "seconds_per_shot = 10")
+        with tempfile.TemporaryDirectory() as tmp:
+            cfg = load_config(write_config(Path(tmp), body))
+            self.assertEqual(cfg.wasted_seconds_per_clip, 0.0)
+            # Same 75 credits, but 50s of video instead of 40s.
+            self.assertAlmostEqual(cfg.credits_per_episode, 75.0)
+            self.assertEqual(cfg.episode_seconds, 50)
+
+    def test_per_second_billing_still_supported(self):
+        body = MANUAL_CONFIG.replace("credits_per_clip = 15", "credits_per_clip = 0") \
+                            .replace("credits_per_second = 0.0", "credits_per_second = 1.5")
+        with tempfile.TemporaryDirectory() as tmp:
+            cfg = load_config(write_config(Path(tmp), body))
+            self.assertAlmostEqual(cfg.credits_per_episode, 40 * 1.5)
+            self.assertEqual(cfg.wasted_seconds_per_clip, 0.0)
 
     def test_manual_allows_1080p_that_omni_forbids(self):
         body = MANUAL_CONFIG.replace('resolution = "720p"', 'resolution = "1080p"')
@@ -171,7 +194,20 @@ class TestManualBackend(unittest.TestCase):
     def test_handoff_states_credit_cost(self):
         concept = make_concept(shots=5)
         sheet = render_handoff(concept, build_shotlist(concept, self.cfg), self.cfg)
-        self.assertIn("40 Credits", sheet)
+        self.assertIn("75 Credits", sheet)
+
+
+class TestShippedConfig(unittest.TestCase):
+    """The config that ships in the repo must load and match the documented cost."""
+
+    def test_default_config_is_valid_and_wastes_nothing(self):
+        cfg = load_config(Path(__file__).resolve().parent.parent / "config.toml")
+        self.assertTrue(cfg.is_manual)
+        self.assertEqual(cfg.episode_seconds, 40)
+        self.assertAlmostEqual(cfg.credits_per_episode, 60.0)
+        self.assertAlmostEqual(cfg.eur_per_episode_credits, 60 * 27.99 / 2500, places=4)
+        self.assertEqual(cfg.episodes_per_plan, 41)
+        self.assertEqual(cfg.wasted_seconds_per_clip, 0.0)
 
 
 class TestAssembleFolder(unittest.TestCase):

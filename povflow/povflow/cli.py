@@ -135,14 +135,28 @@ def cmd_costs(args: argparse.Namespace) -> int:
         # subscription, which the API billing model does not describe at all.
         print(f"Plan:         {cfg.plan_credits} credits for "
               f"{cfg.plan_eur:.2f} EUR  ({cfg.eur_per_credit:.4f} EUR/credit)")
-        print(f"Rate:         {cfg.credits_per_second:.2f} credit(s) per second")
+        if cfg.credits_per_clip:
+            print(f"Rate:         {cfg.credits_per_clip:.0f} credits per clip "
+                  f"(up to {cfg.clip_credit_seconds:.0f}s each)")
+        else:
+            print(f"Rate:         {cfg.credits_per_second:.2f} credit(s) per second")
         print(f"Episode:      {cfg.shots_per_episode} shots x {cfg.seconds_per_shot}s "
               f"= {cfg.episode_seconds}s -> {cfg.credits_per_episode:.0f} credits "
               f"(~{cfg.eur_per_episode_credits:.2f} EUR)")
         print(f"Plan covers:  about {cfg.episodes_per_plan} episode(s) per month")
+
+        wasted = cfg.wasted_seconds_per_clip
+        if wasted:
+            lost = wasted * cfg.shots_per_episode
+            print(f"\nHeads up: a clip costs the same at {cfg.seconds_per_shot}s as at "
+                  f"{cfg.clip_credit_seconds:.0f}s, so you are paying for "
+                  f"{wasted:.0f}s per shot you never use ({lost:.0f}s per episode).")
+            print(f"Setting seconds_per_shot = {cfg.clip_credit_seconds:.0f} costs the "
+                  f"same and gives you a longer video.")
+
         api_eur = 0.10 * cfg.episode_seconds / 1.08
         print(f"\nSame episode over the API would be ~{api_eur:.2f} EUR "
-              f"({api_eur / max(cfg.eur_per_episode_credits, 1e-9):.0f}x more).")
+              f"({api_eur / max(cfg.eur_per_episode_credits, 1e-9):.1f}x more).")
         print("Credits do not grant API access, which is why this backend is manual.")
         return 0
 

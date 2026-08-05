@@ -16,7 +16,10 @@ from .shotlist import ShotPrompt
 
 def render_handoff(concept: Concept, shots: list[ShotPrompt], cfg: Config) -> str:
     total_seconds = sum(s.seconds for s in shots)
-    credits = cfg.credits_per_second * total_seconds
+    credits = (
+        cfg.credits_per_clip * len(shots) if cfg.credits_per_clip
+        else cfg.credits_per_second * total_seconds
+    )
     eur = credits * cfg.eur_per_credit
 
     out: list[str] = [
