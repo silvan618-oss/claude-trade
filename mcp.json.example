@@ -1,0 +1,14 @@
+{
+  "_comment": "Alternative aus dem Video: Claude direkt per MCP mit Alpaca verbinden. Nach ~/.claude.json bzw. .mcp.json kopieren und Keys eintragen. Server: https://github.com/alpacahq/alpaca-mcp-server",
+  "mcpServers": {
+    "alpaca": {
+      "command": "uvx",
+      "args": ["alpaca-mcp-server"],
+      "env": {
+        "ALPACA_API_KEY": "DEIN_PAPER_API_KEY",
+        "ALPACA_SECRET_KEY": "DEIN_PAPER_SECRET_KEY",
+        "ALPACA_PAPER_TRADE": "True"
+      }
+    }
+  }
+}
