@@ -61,11 +61,19 @@ def produce_episode(
     script_path.write_text(render_script(concept, vo_lines), encoding="utf-8")
     (directory / "voiceover.srt").write_text(render_srt(vo_lines), encoding="utf-8")
 
-    if dry_run:
-        store.set_status(episode_id, "dry-run")
+    if cfg.is_manual or dry_run:
+        # Manual runs stop here: the hand-off sheet is the deliverable, and the
+        # clips come back from Flow later via the `assemble` command.
+        from .handoff import render_handoff
+
+        (directory / "prompts.md").write_text(
+            render_handoff(concept, shotlist, cfg), encoding="utf-8"
+        )
+        (directory / "shots").mkdir(exist_ok=True)
+        store.set_status(episode_id, "dry-run" if dry_run else "awaiting-clips")
         return EpisodeResult(
             slug=slug, directory=directory, concept=concept, video_path=None,
-            script_path=script_path, usd_spent=0.0, dry_run=True,
+            script_path=script_path, usd_spent=0.0, dry_run=dry_run,
         )
 
     planned = cfg.usd_per_second * sum(s.seconds for s in shotlist)
@@ -130,12 +138,47 @@ def produce_episode(
     )
 
 
+CLIP_SUFFIXES = (".mp4", ".mov", ".webm", ".m4v")
+
+
+def assemble_folder(cfg: Config, directory: Path, *, keep_intermediates: bool = False) -> Path:
+    """Stitch clips a human dropped into an episode folder's `shots/`."""
+    shots_dir = directory / "shots"
+    if not shots_dir.is_dir():
+        raise AssemblyError(f"No shots/ folder in {directory}")
+
+    clips = sorted(
+        p for p in shots_dir.iterdir()
+        if p.is_file() and p.suffix.lower() in CLIP_SUFFIXES
+    )
+    if not clips:
+        raise AssemblyError(
+            f"No clips found in {shots_dir}. Expected files like shot_01.mp4."
+        )
+
+    print(f"Assembling {len(clips)} clip(s) from {shots_dir.name}/:")
+    for clip in clips:
+        print(f"  {clip.name}")
+
+    work_dir = directory / "work"
+    try:
+        return assemble(
+            clips, directory / "final_silent.mp4",
+            aspect_ratio=cfg.aspect_ratio, resolution=cfg.resolution,
+            keep_audio=cfg.keep_ambient_audio, gain_db=cfg.ambient_audio_gain_db,
+            work_dir=work_dir,
+        )
+    finally:
+        if not keep_intermediates and work_dir.exists():
+            shutil.rmtree(work_dir, ignore_errors=True)
+
+
 def run_batch(
     cfg: Config, store: Store, count: int, *, dry_run: bool = False,
     keep_intermediates: bool = False,
 ) -> list[EpisodeResult]:
     """Generate `count` concepts and produce each one."""
-    if not dry_run and not ffmpeg_available():
+    if not dry_run and not cfg.is_manual and not ffmpeg_available():
         print("Warning: ffmpeg not found — clips will be generated but not stitched.\n")
 
     print(f"Generating {count} concept(s) for niche {cfg.niche!r} ...")

@@ -11,9 +11,11 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from povflow.assemble import (  # noqa: E402
-    Dimensions, build_concat_command, build_normalize_command,
+    AssemblyError, Dimensions, build_concat_command, build_normalize_command,
     build_video_filter, target_dimensions,
 )
+from povflow.handoff import render_handoff  # noqa: E402
+from povflow.pipeline import assemble_folder  # noqa: E402
 from povflow.config import ConfigError, load_config  # noqa: E402
 from povflow.omni import ChainState, build_request  # noqa: E402
 from povflow.ideas import (  # noqa: E402
@@ -104,6 +106,105 @@ class TestConfig(unittest.TestCase):
             with self.assertRaises(ConfigError) as ctx:
                 load_config(write_config(Path(tmp), body))
             self.assertIn("No price known", str(ctx.exception))
+
+
+MANUAL_CONFIG = BASE_CONFIG.replace(
+    'backend = "veo"', 'backend = "manual"'
+) + """
+[costs.credits]
+credits_per_second = 1.0
+plan_eur = 27.99
+plan_credits = 2500
+"""
+
+
+class TestManualBackend(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.cfg = load_config(write_config(Path(self.tmp.name), MANUAL_CONFIG))
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def test_manual_costs_nothing_via_api(self):
+        self.assertTrue(self.cfg.is_manual)
+        self.assertEqual(self.cfg.usd_per_second, 0.0)
+        self.assertEqual(self.cfg.usd_per_episode, 0.0)
+
+    def test_credit_maths_matches_the_plan(self):
+        self.assertAlmostEqual(self.cfg.eur_per_credit, 27.99 / 2500)
+        # 5 shots x 8s at 1 credit/s
+        self.assertAlmostEqual(self.cfg.credits_per_episode, 40.0)
+        self.assertAlmostEqual(self.cfg.eur_per_episode_credits, 40 * 27.99 / 2500)
+        self.assertEqual(self.cfg.episodes_per_plan, 62)
+
+    def test_manual_allows_1080p_that_omni_forbids(self):
+        body = MANUAL_CONFIG.replace('resolution = "720p"', 'resolution = "1080p"')
+        with tempfile.TemporaryDirectory() as tmp:
+            cfg = load_config(write_config(Path(tmp), body))
+            self.assertEqual(cfg.resolution, "1080p")
+
+    def test_manual_ignores_unknown_model_rate(self):
+        # No API call means no rate lookup, so an unpriced model must not fail.
+        body = MANUAL_CONFIG.replace(
+            'model = "veo-3.1-fast-generate-preview"', 'model = "whatever-flow-uses"'
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            cfg = load_config(write_config(Path(tmp), body))
+            self.assertEqual(cfg.usd_per_episode, 0.0)
+
+    def test_handoff_lists_every_shot_with_filename(self):
+        concept = make_concept(shots=3)
+        shots = build_shotlist(concept, self.cfg)
+        sheet = render_handoff(concept, shots, self.cfg)
+        for i in (1, 2, 3):
+            self.assertIn(f"shots/shot_{i:02d}.mp4", sheet)
+        self.assertIn(concept.hook_visual, sheet)
+
+    def test_handoff_tells_you_to_extend_not_regenerate(self):
+        concept = make_concept(shots=3)
+        sheet = render_handoff(concept, build_shotlist(concept, self.cfg), self.cfg)
+        self.assertIn("Shot 1 — neu generieren", sheet)
+        self.assertIn("Szene aus Shot 1 erweitern", sheet)
+        self.assertIn("Szene aus Shot 2 erweitern", sheet)
+
+    def test_handoff_states_credit_cost(self):
+        concept = make_concept(shots=5)
+        sheet = render_handoff(concept, build_shotlist(concept, self.cfg), self.cfg)
+        self.assertIn("40 Credits", sheet)
+
+
+class TestAssembleFolder(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.cfg = load_config(write_config(Path(self.tmp.name), MANUAL_CONFIG))
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def test_missing_shots_folder_is_reported(self):
+        episode = Path(self.tmp.name) / "ep"
+        episode.mkdir()
+        with self.assertRaises(AssemblyError) as ctx:
+            assemble_folder(self.cfg, episode)
+        self.assertIn("No shots/ folder", str(ctx.exception))
+
+    def test_empty_shots_folder_is_reported(self):
+        episode = Path(self.tmp.name) / "ep"
+        (episode / "shots").mkdir(parents=True)
+        with self.assertRaises(AssemblyError) as ctx:
+            assemble_folder(self.cfg, episode)
+        self.assertIn("No clips found", str(ctx.exception))
+
+    def test_non_video_files_are_ignored(self):
+        episode = Path(self.tmp.name) / "ep"
+        shots = episode / "shots"
+        shots.mkdir(parents=True)
+        (shots / "notes.txt").write_text("ignore me")
+        (shots / ".DS_Store").write_text("junk")
+        with self.assertRaises(AssemblyError) as ctx:
+            assemble_folder(self.cfg, episode)
+        self.assertIn("No clips found", str(ctx.exception))
 
 
 class TestOmniConfig(unittest.TestCase):

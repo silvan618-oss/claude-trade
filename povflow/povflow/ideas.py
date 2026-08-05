@@ -259,7 +259,12 @@ def generate_concepts(cfg: Config, store: Store, n: int, *, dry_run: bool = Fals
 
     if not cfg.api_key:
         raise IdeaError(
-            "GEMINI_API_KEY is not set. Put it in povflow/.env or run with --dry-run."
+            "GEMINI_API_KEY is not set. Put it in povflow/.env, or run with "
+            "--dry-run to use placeholder ideas.\n"
+            "Note: this key is only used to write the episode ideas, which is a "
+            "plain text request costing a fraction of a cent — AI Studio's free "
+            "tier normally covers it. No video is generated through the API on "
+            "the manual backend, so your Flow credits are untouched."
         )
 
     from google import genai  # imported lazily so --dry-run needs no dependency

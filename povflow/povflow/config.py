@@ -11,7 +11,10 @@ import tomllib
 from dataclasses import dataclass, field
 from pathlib import Path
 
-BACKENDS = frozenset({"omni", "veo"})
+# "manual" generates everything except the clips themselves. It exists because
+# Google AI subscription credits work in Flow but grant no API access, and credits
+# are roughly an order of magnitude cheaper per second than API billing.
+BACKENDS = frozenset({"manual", "omni", "veo"})
 
 # Per-second USD output rates, Gemini API, August 2026. Override in config if
 # Google changes them — `povflow costs` prints what is actually being used.
@@ -65,6 +68,10 @@ class Config:
     max_usd_per_month: float
     rates: dict[str, float]
 
+    credits_per_second: float
+    plan_eur: float
+    plan_credits: int
+
     output_dir: Path
     state_db: Path
     poll_interval_s: int
@@ -77,7 +84,15 @@ class Config:
         return f"{self.model}:{self.resolution}"
 
     @property
+    def is_manual(self) -> bool:
+        return self.backend == "manual"
+
+    @property
     def usd_per_second(self) -> float:
+        # Manual runs never touch the API, so there is no per-second charge and
+        # no rate to look up.
+        if self.is_manual:
+            return 0.0
         rate = self.rates.get(self.rate_key)
         if rate is None:
             raise ConfigError(
@@ -85,6 +100,24 @@ class Config:
                 f"in your config. Known: {sorted(self.rates)}"
             )
         return rate
+
+    @property
+    def eur_per_credit(self) -> float:
+        return self.plan_eur / self.plan_credits if self.plan_credits else 0.0
+
+    @property
+    def credits_per_episode(self) -> float:
+        return self.credits_per_second * self.episode_seconds
+
+    @property
+    def eur_per_episode_credits(self) -> float:
+        return self.credits_per_episode * self.eur_per_credit
+
+    @property
+    def episodes_per_plan(self) -> int:
+        if not self.credits_per_episode:
+            return 0
+        return int(self.plan_credits // self.credits_per_episode)
 
     @property
     def chained_input_usd_per_shot(self) -> float:
@@ -144,11 +177,12 @@ def load_config(config_path: Path, env_path: Path | None = None) -> Config:
         p = Path(value).expanduser()
         return p if p.is_absolute() else (root / p).resolve()
 
-    backend = str(video.get("backend", "omni")).lower()
+    backend = str(video.get("backend", "manual")).lower()
     default_model = (
-        "gemini-omni-flash-preview" if backend == "omni"
-        else "veo-3.1-fast-generate-preview"
+        "veo-3.1-fast-generate-preview" if backend == "veo"
+        else "gemini-omni-flash-preview"
     )
+    credits = costs.get("credits", {})
 
     cfg = Config(
         backend=backend,
@@ -170,6 +204,9 @@ def load_config(config_path: Path, env_path: Path | None = None) -> Config:
         max_usd_per_run=float(costs.get("max_usd_per_run", 6.0)),
         max_usd_per_month=float(costs.get("max_usd_per_month", 120.0)),
         rates=rates,
+        credits_per_second=float(credits.get("credits_per_second", 1.0)),
+        plan_eur=float(credits.get("plan_eur", 27.99)),
+        plan_credits=int(credits.get("plan_credits", 2500)),
         output_dir=_path(paths.get("output_dir", "output")),
         state_db=_path(paths.get("state_db", "state/povflow.sqlite3")),
         poll_interval_s=int(runtime.get("poll_interval_s", 15)),
@@ -196,6 +233,11 @@ def _validate(cfg: Config) -> None:
         raise ConfigError(f"resolution must be '720p' or '1080p', got {cfg.resolution!r}")
     if cfg.max_usd_per_run <= 0 or cfg.max_usd_per_month <= 0:
         raise ConfigError("Budget caps must be positive")
+
+    if cfg.is_manual:
+        # No API call, so no rate lookup, no budget check, and no model limits:
+        # whatever Flow produced is what gets assembled.
+        return
 
     if cfg.backend == "omni":
         if cfg.resolution not in OMNI_RESOLUTIONS:

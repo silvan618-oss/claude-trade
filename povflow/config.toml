@@ -31,10 +31,14 @@ forbidden = [
 ]
 
 [video]
-# "omni" = Gemini Omni Flash (Standard). Kann Shots aneinanderketten, dadurch
-#          deutlich bessere Kontinuitaet zwischen den Clips. Nur 720p, 3-10s.
-# "veo"  = Veo 3.1. Kein Chaining, dafuer 1080p und 4K moeglich.
-backend = "omni"
+# "manual" = Standard. Das Tool macht alles ausser der Clip-Generierung: Ideen,
+#            Prompts, Schnitt, Voice-over-Skript. Die Clips generierst du selbst
+#            in Flow mit deinen Abo-Credits — ca. 8x guenstiger als die API.
+# "omni"   = Gemini Omni Flash ueber die API. Vollautomatisch, kann Shots
+#            aneinanderketten (bessere Kontinuitaet). Nur 720p, 3-10s.
+#            Kostet API-Preise, NICHT deine Abo-Credits.
+# "veo"    = Veo 3.1 ueber die API. Kein Chaining, dafuer 1080p und 4K.
+backend = "manual"
 
 # Nur bei backend = "omni": jeder Shot baut auf dem vorherigen auf.
 # Kostet pro verkettetem Shot etwas extra (das vorherige Video zaehlt als Input),
@@ -50,7 +54,9 @@ model = "gemini-omni-flash-preview"
 # Modell fuer die Ideen-Generierung (guenstig, nur Text).
 idea_model = "gemini-2.5-flash"
 
-resolution = "720p"      # Omni kann nur 720p. Veo auch "1080p".
+# Bei backend = "manual": die Aufloesung, die aus Flow rauskommt. Wenn du in
+# Flow gratis auf 1080p hochskalierst, hier "1080p" eintragen.
+resolution = "1080p"
 aspect_ratio = "9:16"    # Hochkant fuer TikTok/Reels/Shorts
 
 seconds_per_shot = 8     # Omni: 3-10s erlaubt. Veo: 8s.
@@ -62,9 +68,16 @@ keep_ambient_audio = true
 ambient_audio_gain_db = -18.0
 
 [costs]
-# Harte Obergrenzen. Die Pipeline bricht ab, bevor sie diese reisst.
+# Harte Obergrenzen — gelten nur fuer die API-Backends "omni" und "veo".
+# Bei backend = "manual" laeuft nichts ueber die API, also greift hier nichts.
 max_usd_per_run = 6.0
 max_usd_per_month = 120.0
+
+# Dein Flow-Abo. Wird nur zur Anzeige benutzt (povflow costs), nicht abgerechnet.
+[costs.credits]
+credits_per_second = 1.0   # 15s Video = 15 Credits
+plan_eur = 27.99
+plan_credits = 2500
 
 # Ausgabe-Preise pro Sekunde (Stand August 2026).
 # Anpassen, falls Google sie aendert.

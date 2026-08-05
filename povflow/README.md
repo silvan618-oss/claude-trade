@@ -8,12 +8,13 @@ Ein Durchlauf liefert pro Folge:
 
 ```
 output/2026-08-05_der-hafen/
-  final_silent.mp4    <- fertig geschnittenes Video, ohne Sprache
+  prompts.md          <- Prompts zum Reinkopieren in Flow, Shot fuer Shot
   voiceover.txt       <- dein Skript, mit Timecodes pro Shot
   voiceover.srt       <- dasselbe als Untertitelspur fuer den Editor
   concept.json        <- die Idee
-  shotlist.json       <- die Prompts, die an Veo gingen
-  shots/              <- die einzelnen Rohclips
+  shotlist.json       <- dieselben Prompts maschinenlesbar
+  shots/              <- hier kommen die Clips rein
+  final_silent.mp4    <- entsteht beim Zusammenfuegen
 ```
 
 ---
@@ -34,31 +35,70 @@ laufen, nur mit einer Schnittstelle, die für genau diesen Zweck gedacht ist. Du
 brauchst kein Flow-Abo, sondern einen API-Key, und zahlst pro generierter Sekunde
 statt pro Monat.
 
-## Backends: Omni oder Veo
+## Der wichtigste Punkt: Credits ≠ API
+
+**Abo-Credits und API-Abrechnung sind zwei getrennte Systeme.** Die Credits aus
+deinem Google-AI-Abo funktionieren in Flow, in der Gemini-App und in Whisk. Sie
+geben **keinen API-Zugang**. Wer über die API generiert, zahlt Pay-per-Use, egal
+wie viele Credits im Abo noch liegen.
+
+Der Unterschied ist erheblich:
+
+| | Pro Sekunde | 40s-Folge | 30 Folgen/Monat |
+|---|---|---|---|
+| **Flow mit Credits** (2500 für 27,99 €) | ~0,011 € | **0,45 €** | **13 €** |
+| **Gemini API** (Omni Flash, 0,10 $/s) | ~0,093 € | 3,70 € | 119 € |
+
+Das ist Faktor **8**. 2500 Credits decken etwa **62 Folgen à 40 Sekunden** pro
+Monat ab — mehr als zwei pro Tag.
+
+Deshalb ist der Standard hier nicht Vollautomatik, sondern der Hybrid-Modus.
+
+## Die drei Backends
 
 Einstellbar in `config.toml` unter `backend`.
 
-### `omni` — Gemini Omni Flash (Standard)
+### `manual` — Hybrid (Standard, empfohlen)
 
-Seit 30. Juni 2026 in der API (`gemini-omni-flash-preview`). Der entscheidende
-Unterschied liegt in der **Interactions API**: Jeder Shot kann per
-`previous_interaction_id` auf den vorherigen aufbauen. Das Modell behält dabei
-Szene, Licht, Kamera und Motiv im Kopf, statt jeden Clip bei null zu beginnen.
+Das Tool macht alles ausser der Clip-Generierung: Ideen, Prompts, Schnitt,
+Voice-over-Skript. Du generierst die Clips selbst in Flow mit deinen Credits.
 
-Genau das ist die grösste Schwäche von reiner Clip-für-Clip-Generierung, und
-deshalb ist Omni hier der Standard. Eingeschaltet über `chain_shots = true`.
+Der Ablauf pro Folge dauert ein paar Minuten:
 
-Grenzen: **nur 720p**, Clips zwischen **3 und 10 Sekunden**. Ausgaben tragen
+1. `povflow run -n 1` → erzeugt Ordner mit `prompts.md`
+2. Prompts aus `prompts.md` in Flow kopieren, Clips generieren
+3. Clips als `shot_01.mp4`, `shot_02.mp4` … in den `shots/`-Unterordner
+4. `povflow assemble <ordner>` → fertiger stummer Schnitt
+5. Voice-over nach `voiceover.txt` einsprechen
+
+Du behältst die Credit-Preise und verlierst nur den letzten Automatikschritt.
+Ideenfindung, Prompt-Handwerk, Schnitt und Skript — der zeitaufwendige Teil —
+laufen weiterhin automatisch.
+
+**In Flow wichtig:** Für Shot 2 und später nicht neu generieren, sondern die
+Szene erweitern. Ein frischer Prompt startet eine neue Welt, und die Folge fällt
+auseinander. Die `prompts.md` weist bei jedem Shot darauf hin.
+
+### `omni` — Gemini Omni Flash über die API
+
+Vollautomatisch, aber zu API-Preisen. Der technische Vorteil liegt in der
+**Interactions API**: Jeder Shot baut per `previous_interaction_id` auf dem
+vorherigen auf, das Modell behält Szene, Licht und Motiv im Kopf. Das ist
+zuverlässiger als manuelles Erweitern in Flow.
+
+Grenzen: nur 720p, Clips zwischen 3 und 10 Sekunden. Ausgaben tragen
 SynthID-Wasserzeichen.
 
-### `veo` — Veo 3.1
+Sinnvoll, wenn dir die Zeitersparnis die ~8-fachen Kosten wert ist, oder wenn du
+so viel produzierst, dass 2500 Credits nicht reichen.
+
+### `veo` — Veo 3.1 über die API
 
 Kein Chaining, jeder Clip entsteht isoliert. Dafür 1080p und 4K möglich, und mit
-der Lite-Variante deutlich billiger. Sinnvoll, wenn du einzelne starke Shots
-brauchst statt einer durchgehenden Szene, oder wenn du in 1080p ausspielen willst.
+der Lite-Variante die billigste API-Option ($0.05/s).
 
-Modelle: `veo-3.1-lite-generate-preview` ($0.05/s), `veo-3.1-fast-generate-preview`
-($0.10/s), `veo-3.1-generate-preview` ($0.40/s).
+Modelle: `veo-3.1-lite-generate-preview`, `veo-3.1-fast-generate-preview`,
+`veo-3.1-generate-preview`.
 
 ---
 
@@ -95,6 +135,11 @@ cp .env.example .env
 und den Key in die `.env` schreiben. Die Datei ist per `.gitignore` ausgeschlossen
 und landet nie im Repository.
 
+**Auch im Hybrid-Modus brauchst du diesen Key** — aber nur, damit das Tool die
+Episoden-Ideen schreiben kann. Das ist eine reine Textanfrage für Bruchteile
+eines Cents, die der Gratis-Kontingent von AI Studio normalerweise abdeckt. Es
+läuft **kein Video** über die API, deine Flow-Credits bleiben unberührt.
+
 ---
 
 ## Benutzung
@@ -106,9 +151,10 @@ python3 -m povflow.cli run --dry-run -n 3
 ```
 
 Das erzeugt drei komplette Konzepte, Shotlists und Voice-over-Skripte, ohne ein
-einziges Video zu generieren und ohne einen Cent auszugeben. Schau dir die
-`shotlist.json` an: Das sind exakt die Prompts, die später an Veo gehen. Wenn die
-Prompts gut aussehen, sieht meist auch das Video gut aus.
+einziges Video zu generieren. Schau dir die `prompts.md` an: Das sind exakt die
+Prompts, die du später in Flow einsetzt. Wenn die Prompts gut aussehen, sieht
+meist auch das Video gut aus — und Konzepte aussortieren ist gratis, Clips
+generieren kostet Credits.
 
 **Kosten prüfen, bevor du echt startest:**
 
@@ -122,6 +168,16 @@ python3 -m povflow.cli costs
 python3 -m povflow.cli run -n 1
 ```
 
+Im Hybrid-Modus legt das den Ordner mit `prompts.md` an. Nachdem du die Clips in
+Flow generiert und in `shots/` abgelegt hast:
+
+```bash
+python3 -m povflow.cli assemble output/2026-08-05_der-hafen
+```
+
+Das sucht alle Videodateien in `shots/`, sortiert sie nach Namen, schneidet sie
+auf 9:16 zu und fügt sie zusammen. Andere Dateien im Ordner werden ignoriert.
+
 **Was schon produziert wurde:**
 
 ```bash
@@ -132,7 +188,15 @@ python3 -m povflow.cli history
 
 ## Kosten
 
-Preise Gemini API, Stand August 2026, pro generierter Sekunde Ausgabe:
+`povflow costs` rechnet dir das für deine aktuelle Konfiguration aus — im
+Hybrid-Modus in Credits, bei den API-Backends in Dollar.
+
+**Hybrid-Modus (Credits):** 1 Credit pro Sekunde, also 40 Credits für eine
+40-Sekunden-Folge ≈ 0,45 €. Deine 2500 Credits reichen für ~62 Folgen im Monat.
+Trag dein Abo unter `[costs.credits]` in der `config.toml` ein, dann stimmt die
+Anzeige.
+
+**API-Backends**, Preise Gemini API Stand August 2026, pro Sekunde Ausgabe:
 
 | Modell | 720p | 1080p |
 |---|---|---|
@@ -141,18 +205,16 @@ Preise Gemini API, Stand August 2026, pro generierter Sekunde Ausgabe:
 | Veo 3.1 Fast | $0.10 | $0.12 |
 | Veo 3.1 Standard | $0.40 | $0.40 |
 
-**Beim Chaining kommt etwas dazu, das im Sekundenpreis nicht steht:** Ein
+**Beim Omni-Chaining kommt etwas dazu, das im Sekundenpreis nicht steht:** Ein
 verketteter Shot schickt den vorherigen Clip als Kontext mit, und der wird als
 Video-Input berechnet (5.792 Tokens pro Sekunde, $1.50 pro 1 Mio. Tokens). Das
-sind ca. **$0.07 pro verkettetem Shot**. Die Pipeline rechnet das mit ein,
-`povflow costs` zeigt es getrennt an.
+sind ca. **$0.07 pro verkettetem Shot**, bei 5 Shots also $0.28 pro Folge. Die
+Pipeline rechnet das mit ein und zeigt es getrennt an.
 
-Mit der Standardeinstellung (Omni, 720p, 5 Shots à 8 Sekunden = 40 Sekunden Video):
-
-- **ca. $4.28 pro Folge** ($4.00 Ausgabe + $0.28 Chaining)
-- 1 Folge pro Tag ≈ **$130 im Monat**
-- Ohne Chaining: $4.00 pro Folge, aber schlechtere Kontinuität
-- Mit Veo Lite statt Omni: $2.00 pro Folge, kein Chaining möglich
+Zwei harte Bremsen greifen bei den API-Backends, beide in der `config.toml`:
+`max_usd_per_run` und `max_usd_per_month`. Die Ausgaben werden nach jedem
+erfolgreichen Clip sofort protokolliert, ein Absturz mitten im Lauf verliert
+also keine bereits ausgegebenen Beträge.
 
 Zwei harte Bremsen sind eingebaut, beide in der `config.toml`:
 
@@ -195,9 +257,12 @@ Voice-over läuft.
 
 ---
 
-## Vollautomatik
+## Automatisch planen lassen
 
-Wenn du täglich eine Folge willst, ohne selbst etwas zu starten:
+Im Hybrid-Modus kann der Planungsteil trotzdem nachts laufen: Morgens liegt eine
+fertige `prompts.md` bereit, du generierst die Clips in Flow und lässt
+`assemble` drüberlaufen. Bei den API-Backends entsteht dabei direkt das fertige
+Video.
 
 **macOS/Linux** (`crontab -e`), jeden Tag um 6 Uhr früh:
 
@@ -208,8 +273,7 @@ Wenn du täglich eine Folge willst, ohne selbst etwas zu starten:
 **Windows**: Aufgabenplanung → Neue Aufgabe → Programm `python`, Argumente
 `-m povflow.cli run -n 1`, Startordner auf den `povflow`-Ordner setzen.
 
-Morgens liegt dann eine fertige Folge im `output/`-Ordner. Du öffnest die
-`voiceover.txt`, sprichst drüber, fertig.
+Morgens liegt dann ein fertig geplanter Ordner in `output/`.
 
 ---
 
@@ -224,13 +288,15 @@ Ehrlich, damit du nicht enttäuscht bist:
 - **Nicht jede Folge wird gut.** Rechne mit einer brauchbaren Folge aus zwei bis
   drei. Deshalb der Dry-Run: Konzepte aussortieren ist gratis, Videos generieren
   nicht.
-- **Kontinuität ist besser, aber nicht gelöst.** Mit `chain_shots = true` hält
-  Omni die Szene über die Shots hinweg. Perfekt ist das nicht — Details können
-  weiter driften, je länger die Kette wird. Bei Handy-Optik fällt das deutlich
-  weniger auf als bei Kino-Look, was einer der Gründe ist, warum dieser Stil für
-  KI-Video gut funktioniert. Wenn eine Folge auseinanderfällt, hilft es meist,
-  `shots_per_episode` zu senken und `seconds_per_shot` auf 10 zu erhöhen: weniger
-  Kettenglieder, weniger Drift.
+- **Im Hybrid-Modus generiert es keine Clips.** Das ist der Preis für die
+  Credit-Preise: Flow hat keine API, also bleibt dieser Schritt bei dir.
+- **Kontinuität ist besser, aber nicht gelöst.** In Flow hängt sie daran, dass du
+  die Szene erweiterst statt neu zu generieren; über das Omni-Backend erledigt
+  das `chain_shots`. Perfekt ist beides nicht — Details driften, je länger die
+  Kette wird. Bei Handy-Optik fällt das deutlich weniger auf als bei Kino-Look,
+  was einer der Gründe ist, warum dieser Stil für KI-Video gut funktioniert. Wenn
+  eine Folge auseinanderfällt: `shots_per_episode` senken und `seconds_per_shot`
+  erhöhen. Weniger Kettenglieder, weniger Drift.
 - **Es prüft keine Plattformregeln.** KI-Inhalte müssen auf TikTok, Instagram und
   YouTube als solche gekennzeichnet werden. Das ist deine Verantwortung, und es
   ist auch in deinem Interesse: Nicht gekennzeichneter KI-Content wird von den
@@ -241,10 +307,18 @@ Ehrlich, damit du nicht enttäuscht bist:
 
 ## Wenn etwas nicht funktioniert
 
-**`GEMINI_API_KEY is not set`** — `.env` fehlt oder der Key steht nicht drin.
+**`GEMINI_API_KEY is not set`** — `.env` fehlt oder der Key steht nicht drin. Wird
+auch im Hybrid-Modus gebraucht, aber nur für die Ideen (reiner Text, praktisch
+gratis). Zum Ausprobieren ohne Key: `--dry-run`.
+
+**`No clips found in .../shots`** — die Clips liegen nicht im `shots/`-Unterordner
+oder haben eine ungewöhnliche Endung. Erkannt werden `.mp4`, `.mov`, `.webm`,
+`.m4v`. Die Reihenfolge ergibt sich aus dem Dateinamen, deshalb `shot_01`,
+`shot_02` mit führender Null.
 
 **`Gemini Omni Flash only outputs 720p`** — `resolution` in der `config.toml` auf
-`"720p"` setzen, oder auf `backend = "veo"` wechseln.
+`"720p"` setzen, oder auf `backend = "veo"` wechseln. Im Hybrid-Modus gilt die
+Grenze nicht: dort trägst du ein, was aus Flow rauskommt.
 
 **Folge fällt szenisch auseinander** — `shots_per_episode` runter,
 `seconds_per_shot` auf 10 hoch. Kürzere Kette, weniger Drift.
@@ -267,6 +341,7 @@ mittig auf 9:16 zu. In der Ausgabe steht dann `got 1280x720, cropping to 720x128
 python3 -m unittest discover -s tests -v
 ```
 
-47 Tests, decken Konfiguration und Backend-Limits, Kostenlogik inklusive
-Chaining-Aufschlag, Omni-Request-Aufbau, Ideen-Parsing, Dedup, Prompt-Aufbau,
+57 Tests, decken Konfiguration und Backend-Limits, Credit- und Dollar-Kostenlogik
+inklusive Chaining-Aufschlag, Omni-Request-Aufbau, das Hand-off-Blatt,
+Clip-Erkennung beim Zusammenfügen, Ideen-Parsing, Dedup, Prompt-Aufbau,
 ffmpeg-Kommandos und Voice-over-Timing ab.
