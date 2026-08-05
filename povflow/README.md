@@ -20,9 +20,6 @@ output/2026-08-05_der-hafen/
 
 ## Wichtig vorab: warum nicht "mit deinem Flow-Account"
 
-Du hattest nach Automatisierung über Flow gefragt. Das geht so nicht, und das ist
-kein Detail:
-
 **Flow hat keine API.** Google Flow ist ein reines Web-Interface. Die einzige
 Möglichkeit, es "automatisch" zu bedienen, wäre ein Bot, der sich mit deinen
 Zugangsdaten einloggt und die Oberfläche fernsteuert. Davon rate ich ab:
@@ -32,13 +29,36 @@ Zugangsdaten einloggt und die Oberfläche fernsteuert. Davon rate ich ab:
   gesperrt**, mit allem was dranhängt.
 - Es bricht bei jedem UI-Update, also praktisch ständig.
 
-Der offizielle Weg ist die **Gemini API mit Veo 3.1** — dasselbe Modell, das auch
-hinter Flow läuft, nur eben mit einer Schnittstelle, die für genau diesen Zweck
-gedacht ist. Das nutzt dieses Tool. Du brauchst dafür kein Flow-Abo, sondern einen
-API-Key, und zahlst pro generierter Sekunde statt pro Monat.
+Der offizielle Weg ist die **Gemini API** — dieselben Modelle, die auch hinter Flow
+laufen, nur mit einer Schnittstelle, die für genau diesen Zweck gedacht ist. Du
+brauchst kein Flow-Abo, sondern einen API-Key, und zahlst pro generierter Sekunde
+statt pro Monat.
 
-Hinweis am Rande: Die alten Veo-3-Endpunkte wurden am **30. Juni 2026 abgeschaltet**.
-Dieses Tool nutzt Veo 3.1.
+## Backends: Omni oder Veo
+
+Einstellbar in `config.toml` unter `backend`.
+
+### `omni` — Gemini Omni Flash (Standard)
+
+Seit 30. Juni 2026 in der API (`gemini-omni-flash-preview`). Der entscheidende
+Unterschied liegt in der **Interactions API**: Jeder Shot kann per
+`previous_interaction_id` auf den vorherigen aufbauen. Das Modell behält dabei
+Szene, Licht, Kamera und Motiv im Kopf, statt jeden Clip bei null zu beginnen.
+
+Genau das ist die grösste Schwäche von reiner Clip-für-Clip-Generierung, und
+deshalb ist Omni hier der Standard. Eingeschaltet über `chain_shots = true`.
+
+Grenzen: **nur 720p**, Clips zwischen **3 und 10 Sekunden**. Ausgaben tragen
+SynthID-Wasserzeichen.
+
+### `veo` — Veo 3.1
+
+Kein Chaining, jeder Clip entsteht isoliert. Dafür 1080p und 4K möglich, und mit
+der Lite-Variante deutlich billiger. Sinnvoll, wenn du einzelne starke Shots
+brauchst statt einer durchgehenden Szene, oder wenn du in 1080p ausspielen willst.
+
+Modelle: `veo-3.1-lite-generate-preview` ($0.05/s), `veo-3.1-fast-generate-preview`
+($0.10/s), `veo-3.1-generate-preview` ($0.40/s).
 
 ---
 
@@ -112,17 +132,27 @@ python3 -m povflow.cli history
 
 ## Kosten
 
-Preise Gemini API, Stand August 2026, pro generierter Sekunde:
+Preise Gemini API, Stand August 2026, pro generierter Sekunde Ausgabe:
 
 | Modell | 720p | 1080p |
 |---|---|---|
+| Gemini Omni Flash | $0.10 | — |
+| Veo 3.1 Lite | $0.05 | $0.08 |
 | Veo 3.1 Fast | $0.10 | $0.12 |
-| Veo 3.1 Standard | $0.20 | $0.40 |
+| Veo 3.1 Standard | $0.40 | $0.40 |
 
-Mit der Standardeinstellung (Fast, 720p, 5 Shots à 8 Sekunden = 40 Sekunden Video):
+**Beim Chaining kommt etwas dazu, das im Sekundenpreis nicht steht:** Ein
+verketteter Shot schickt den vorherigen Clip als Kontext mit, und der wird als
+Video-Input berechnet (5.792 Tokens pro Sekunde, $1.50 pro 1 Mio. Tokens). Das
+sind ca. **$0.07 pro verkettetem Shot**. Die Pipeline rechnet das mit ein,
+`povflow costs` zeigt es getrennt an.
 
-- **ca. $4 pro Folge**
-- 1 Folge pro Tag ≈ **$120 im Monat**
+Mit der Standardeinstellung (Omni, 720p, 5 Shots à 8 Sekunden = 40 Sekunden Video):
+
+- **ca. $4.28 pro Folge** ($4.00 Ausgabe + $0.28 Chaining)
+- 1 Folge pro Tag ≈ **$130 im Monat**
+- Ohne Chaining: $4.00 pro Folge, aber schlechtere Kontinuität
+- Mit Veo Lite statt Omni: $2.00 pro Folge, kein Chaining möglich
 
 Zwei harte Bremsen sind eingebaut, beide in der `config.toml`:
 
@@ -153,7 +183,8 @@ Schreib rein, was die Serie ausmacht, und vor allem, was sie *nicht* sein soll.
 sich.
 
 **`shots_per_episode` und `seconds_per_shot`** — steuern Länge und Preis direkt.
-5 × 8 s = 40 s ist ein guter Startwert für TikTok.
+5 × 8 s = 40 s ist ein guter Startwert für TikTok. Bei Omni sind 3–10 s pro Shot
+erlaubt; längere Shots bedeuten weniger Kettenglieder und damit weniger Drift.
 
 Der Look selbst steckt in `povflow/style.py`. Da ist die "Style-DNA" definiert,
 die in jeden einzelnen Shot-Prompt eingebaut wird: Handkamera, Autofokus-Suchen,
@@ -193,21 +224,30 @@ Ehrlich, damit du nicht enttäuscht bist:
 - **Nicht jede Folge wird gut.** Rechne mit einer brauchbaren Folge aus zwei bis
   drei. Deshalb der Dry-Run: Konzepte aussortieren ist gratis, Videos generieren
   nicht.
-- **Kontinuität zwischen Shots ist die Schwachstelle.** Veo generiert jeden Clip
-  einzeln. Die Prompts tragen die Location-Beschreibung durch alle Shots, aber
-  Kleidung, exaktes Licht und Kreatur-Details können springen. Bei
-  Handy-Optik fällt das weniger auf als bei Kino-Look — das ist einer der Gründe,
-  warum dieser Stil für KI-Video gut funktioniert.
+- **Kontinuität ist besser, aber nicht gelöst.** Mit `chain_shots = true` hält
+  Omni die Szene über die Shots hinweg. Perfekt ist das nicht — Details können
+  weiter driften, je länger die Kette wird. Bei Handy-Optik fällt das deutlich
+  weniger auf als bei Kino-Look, was einer der Gründe ist, warum dieser Stil für
+  KI-Video gut funktioniert. Wenn eine Folge auseinanderfällt, hilft es meist,
+  `shots_per_episode` zu senken und `seconds_per_shot` auf 10 zu erhöhen: weniger
+  Kettenglieder, weniger Drift.
 - **Es prüft keine Plattformregeln.** KI-Inhalte müssen auf TikTok, Instagram und
   YouTube als solche gekennzeichnet werden. Das ist deine Verantwortung, und es
   ist auch in deinem Interesse: Nicht gekennzeichneter KI-Content wird von den
-  Plattformen zunehmend in der Reichweite gedrosselt.
+  Plattformen zunehmend in der Reichweite gedrosselt. Omni-Ausgaben tragen
+  ohnehin ein SynthID-Wasserzeichen, die Plattformen erkennen es also so oder so.
 
 ---
 
 ## Wenn etwas nicht funktioniert
 
 **`GEMINI_API_KEY is not set`** — `.env` fehlt oder der Key steht nicht drin.
+
+**`Gemini Omni Flash only outputs 720p`** — `resolution` in der `config.toml` auf
+`"720p"` setzen, oder auf `backend = "veo"` wechseln.
+
+**Folge fällt szenisch auseinander** — `shots_per_episode` runter,
+`seconds_per_shot` auf 10 hoch. Kürzere Kette, weniger Drift.
 
 **`ffmpeg and ffprobe are required`** — ffmpeg fehlt. Die Clips sind trotzdem
 generiert und liegen in `shots/`; du kannst sie von Hand zusammenschneiden.
@@ -227,5 +267,6 @@ mittig auf 9:16 zu. In der Ausgabe steht dann `got 1280x720, cropping to 720x128
 python3 -m unittest discover -s tests -v
 ```
 
-36 Tests, decken Konfiguration, Kostenlogik, Ideen-Parsing, Dedup,
-Prompt-Aufbau, ffmpeg-Kommandos und Voice-over-Timing ab.
+47 Tests, decken Konfiguration und Backend-Limits, Kostenlogik inklusive
+Chaining-Aufschlag, Omni-Request-Aufbau, Ideen-Parsing, Dedup, Prompt-Aufbau,
+ffmpeg-Kommandos und Voice-over-Timing ab.

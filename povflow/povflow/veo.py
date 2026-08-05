@@ -8,44 +8,12 @@ A crash mid-episode therefore cannot lose spend that already happened.
 from __future__ import annotations
 
 import time
-from dataclasses import dataclass
 from pathlib import Path
 
+from .backend import Clip, GenerationError
 from .config import Config
 from .shotlist import ShotPrompt
 from .state import Store
-
-
-class BudgetExceeded(Exception):
-    """Raised before spending money that would break a configured cap."""
-
-
-class GenerationError(Exception):
-    """Raised when Veo fails to produce a clip after all retries."""
-
-
-@dataclass
-class Clip:
-    index: int
-    path: Path
-    seconds: float
-    usd: float
-
-
-def check_budget(cfg: Config, store: Store, planned_usd: float) -> None:
-    """Refuse a run that would break the run cap or the month cap."""
-    if planned_usd > cfg.max_usd_per_run + 1e-9:
-        raise BudgetExceeded(
-            f"This run would cost about ${planned_usd:.2f}, over the "
-            f"max_usd_per_run cap of ${cfg.max_usd_per_run:.2f}."
-        )
-    spent = store.spend_this_month()
-    if spent + planned_usd > cfg.max_usd_per_month + 1e-9:
-        raise BudgetExceeded(
-            f"Month-to-date spend is ${spent:.2f}. This run would add "
-            f"${planned_usd:.2f} and break the monthly cap of "
-            f"${cfg.max_usd_per_month:.2f}."
-        )
 
 
 def _build_video_config(cfg: Config, shot: ShotPrompt):

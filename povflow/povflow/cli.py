@@ -95,8 +95,14 @@ def cmd_costs(args: argparse.Namespace) -> int:
     store = Store(cfg.state_db)
     spent = store.spend_this_month()
 
+    print(f"Backend:      {cfg.backend}"
+          + ("  (shots chained for continuity)"
+             if cfg.backend == "omni" and cfg.chain_shots else ""))
     print(f"Model:        {cfg.model} at {cfg.resolution}")
-    print(f"Rate:         ${cfg.usd_per_second:.3f} per second")
+    print(f"Rate:         ${cfg.usd_per_second:.3f} per second of output")
+    if cfg.chained_input_usd_per_shot:
+        print(f"Chaining:     +${cfg.chained_input_usd_per_shot:.3f} per chained shot "
+              f"(previous clip billed as input)")
     print(f"Episode:      {cfg.shots_per_episode} shots x {cfg.seconds_per_shot}s "
           f"= {cfg.episode_seconds}s -> ${cfg.usd_per_episode:.2f}")
     print(f"Run cap:      ${cfg.max_usd_per_run:.2f}")

@@ -11,14 +11,29 @@ import tomllib
 from dataclasses import dataclass, field
 from pathlib import Path
 
-# Per-second USD rates, Gemini API, August 2026. Override in config if Google
-# changes them — `povflow costs` prints what is actually being used.
+BACKENDS = frozenset({"omni", "veo"})
+
+# Per-second USD output rates, Gemini API, August 2026. Override in config if
+# Google changes them — `povflow costs` prints what is actually being used.
 DEFAULT_RATES: dict[str, float] = {
+    "gemini-omni-flash-preview:720p": 0.10,
+    "veo-3.1-lite-generate-preview:720p": 0.05,
+    "veo-3.1-lite-generate-preview:1080p": 0.08,
     "veo-3.1-fast-generate-preview:720p": 0.10,
     "veo-3.1-fast-generate-preview:1080p": 0.12,
-    "veo-3.1-generate-preview:720p": 0.20,
+    "veo-3.1-generate-preview:720p": 0.40,
     "veo-3.1-generate-preview:1080p": 0.40,
 }
+
+# Omni billing details. Chained shots re-send the previous clip as context and
+# that is billed as video input tokens, which the per-second rate does not cover.
+OMNI_VIDEO_TOKENS_PER_SECOND = 5792   # 720p
+OMNI_INPUT_USD_PER_1M_TOKENS = 1.50
+
+# Hard limits of the Omni Flash preview model.
+OMNI_MIN_CLIP_SECONDS = 3
+OMNI_MAX_CLIP_SECONDS = 10
+OMNI_RESOLUTIONS = frozenset({"720p"})
 
 
 class ConfigError(Exception):
@@ -27,6 +42,9 @@ class ConfigError(Exception):
 
 @dataclass
 class Config:
+    backend: str
+    chain_shots: bool
+
     niche: str
     style_preset: str
     audience: str
@@ -69,8 +87,19 @@ class Config:
         return rate
 
     @property
+    def chained_input_usd_per_shot(self) -> float:
+        """Extra input cost each chained shot carries beyond the output rate."""
+        if self.backend != "omni" or not self.chain_shots:
+            return 0.0
+        tokens = self.seconds_per_shot * OMNI_VIDEO_TOKENS_PER_SECOND
+        return tokens / 1_000_000 * OMNI_INPUT_USD_PER_1M_TOKENS
+
+    @property
     def usd_per_episode(self) -> float:
-        return self.usd_per_second * self.seconds_per_shot * self.shots_per_episode
+        output = self.usd_per_second * self.seconds_per_shot * self.shots_per_episode
+        # The first shot starts the chain, so only the rest carry input cost.
+        chained_shots = max(0, self.shots_per_episode - 1)
+        return output + self.chained_input_usd_per_shot * chained_shots
 
     @property
     def episode_seconds(self) -> int:
@@ -115,14 +144,22 @@ def load_config(config_path: Path, env_path: Path | None = None) -> Config:
         p = Path(value).expanduser()
         return p if p.is_absolute() else (root / p).resolve()
 
+    backend = str(video.get("backend", "omni")).lower()
+    default_model = (
+        "gemini-omni-flash-preview" if backend == "omni"
+        else "veo-3.1-fast-generate-preview"
+    )
+
     cfg = Config(
+        backend=backend,
+        chain_shots=bool(video.get("chain_shots", True)),
         niche=channel.get("niche", "fantasy"),
         style_preset=channel.get("style_preset", "fantasy"),
         audience=channel.get("audience", "TikTok and Reels, 16-30"),
         language=channel.get("language", "de"),
         concept_brief=channel.get("concept_brief", ""),
         forbidden=list(channel.get("forbidden", [])),
-        model=video.get("model", "veo-3.1-fast-generate-preview"),
+        model=video.get("model", default_model),
         idea_model=video.get("idea_model", "gemini-2.5-flash"),
         resolution=video.get("resolution", "720p"),
         aspect_ratio=video.get("aspect_ratio", "9:16"),
@@ -145,6 +182,10 @@ def load_config(config_path: Path, env_path: Path | None = None) -> Config:
 
 
 def _validate(cfg: Config) -> None:
+    if cfg.backend not in BACKENDS:
+        raise ConfigError(
+            f"backend must be one of {sorted(BACKENDS)}, got {cfg.backend!r}"
+        )
     if cfg.shots_per_episode < 1:
         raise ConfigError("shots_per_episode must be at least 1")
     if cfg.seconds_per_shot < 1:
@@ -155,6 +196,18 @@ def _validate(cfg: Config) -> None:
         raise ConfigError(f"resolution must be '720p' or '1080p', got {cfg.resolution!r}")
     if cfg.max_usd_per_run <= 0 or cfg.max_usd_per_month <= 0:
         raise ConfigError("Budget caps must be positive")
+
+    if cfg.backend == "omni":
+        if cfg.resolution not in OMNI_RESOLUTIONS:
+            raise ConfigError(
+                f"Gemini Omni Flash only outputs 720p, config says {cfg.resolution!r}. "
+                f'Set resolution = "720p", or use backend = "veo" for 1080p.'
+            )
+        if not OMNI_MIN_CLIP_SECONDS <= cfg.seconds_per_shot <= OMNI_MAX_CLIP_SECONDS:
+            raise ConfigError(
+                f"Gemini Omni Flash produces {OMNI_MIN_CLIP_SECONDS}-"
+                f"{OMNI_MAX_CLIP_SECONDS}s clips, config says {cfg.seconds_per_shot}s."
+            )
 
     # Catch an impossible budget at load time rather than after paying for shot 1.
     if cfg.usd_per_episode > cfg.max_usd_per_run:

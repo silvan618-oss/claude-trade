@@ -31,17 +31,29 @@ forbidden = [
 ]
 
 [video]
-# Veo 3.1. "fast" ist deutlich guenstiger und fuer Shorts gut genug.
-# Alternative: "veo-3.1-generate-preview" (bessere Qualitaet, 2-4x teurer)
-model = "veo-3.1-fast-generate-preview"
+# "omni" = Gemini Omni Flash (Standard). Kann Shots aneinanderketten, dadurch
+#          deutlich bessere Kontinuitaet zwischen den Clips. Nur 720p, 3-10s.
+# "veo"  = Veo 3.1. Kein Chaining, dafuer 1080p und 4K moeglich.
+backend = "omni"
+
+# Nur bei backend = "omni": jeder Shot baut auf dem vorherigen auf.
+# Kostet pro verkettetem Shot etwas extra (das vorherige Video zaehlt als Input),
+# ist aber der Hauptgrund, Omni zu nehmen. Auf false = jeder Shot startet neu.
+chain_shots = true
+
+# Passend zum Backend:
+#   omni -> "gemini-omni-flash-preview"
+#   veo  -> "veo-3.1-fast-generate-preview" | "veo-3.1-lite-generate-preview"
+#           | "veo-3.1-generate-preview"
+model = "gemini-omni-flash-preview"
 
 # Modell fuer die Ideen-Generierung (guenstig, nur Text).
 idea_model = "gemini-2.5-flash"
 
-resolution = "720p"      # "720p" oder "1080p"
+resolution = "720p"      # Omni kann nur 720p. Veo auch "1080p".
 aspect_ratio = "9:16"    # Hochkant fuer TikTok/Reels/Shorts
 
-seconds_per_shot = 8     # Veo liefert 8s-Clips
+seconds_per_shot = 8     # Omni: 3-10s erlaubt. Veo: 8s.
 shots_per_episode = 5    # 5 x 8s = 40s Video
 
 # Umgebungsgeraeusche bleiben als Bett unter deinem Voice-over liegen.
@@ -54,11 +66,15 @@ ambient_audio_gain_db = -18.0
 max_usd_per_run = 6.0
 max_usd_per_month = 120.0
 
-# Preise pro Sekunde (Stand August 2026). Anpassen, falls Google sie aendert.
+# Ausgabe-Preise pro Sekunde (Stand August 2026).
+# Anpassen, falls Google sie aendert.
 [costs.rates]
+"gemini-omni-flash-preview:720p" = 0.10
+"veo-3.1-lite-generate-preview:720p" = 0.05
+"veo-3.1-lite-generate-preview:1080p" = 0.08
 "veo-3.1-fast-generate-preview:720p" = 0.10
 "veo-3.1-fast-generate-preview:1080p" = 0.12
-"veo-3.1-generate-preview:720p" = 0.20
+"veo-3.1-generate-preview:720p" = 0.40
 "veo-3.1-generate-preview:1080p" = 0.40
 
 [paths]

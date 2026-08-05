@@ -9,11 +9,11 @@ from datetime import date
 from pathlib import Path
 
 from .assemble import AssemblyError, assemble, ffmpeg_available
+from .backend import BudgetExceeded, Clip, check_budget
 from .config import Config
 from .ideas import Concept, generate_concepts
 from .shotlist import build_shotlist
 from .state import Store
-from .veo import BudgetExceeded, Clip, check_budget, generate_clip
 
 
 @dataclass
@@ -69,19 +69,36 @@ def produce_episode(
         )
 
     planned = cfg.usd_per_second * sum(s.seconds for s in shotlist)
+    planned += cfg.chained_input_usd_per_shot * max(0, len(shotlist) - 1)
     check_budget(cfg, store, planned)
 
     shots_dir = directory / "shots"
     clips: list[Clip] = []
     try:
-        for shot in shotlist:
-            print(f"  shot {shot.index}/{len(shotlist)} generating ...")
-            clips.append(
-                generate_clip(
-                    cfg, store, shot, shots_dir / f"shot_{shot.index:02d}.mp4",
-                    episode_id,
+        if cfg.backend == "omni":
+            from .omni import ChainState, generate_clip
+
+            chain = ChainState()
+            for shot in shotlist:
+                linked = " (continuing previous shot)" if chain.interaction_id else ""
+                print(f"  shot {shot.index}/{len(shotlist)} generating{linked} ...")
+                clips.append(
+                    generate_clip(
+                        cfg, store, shot, shots_dir / f"shot_{shot.index:02d}.mp4",
+                        episode_id, chain,
+                    )
                 )
-            )
+        else:
+            from .veo import generate_clip as generate_veo_clip
+
+            for shot in shotlist:
+                print(f"  shot {shot.index}/{len(shotlist)} generating ...")
+                clips.append(
+                    generate_veo_clip(
+                        cfg, store, shot, shots_dir / f"shot_{shot.index:02d}.mp4",
+                        episode_id,
+                    )
+                )
     except Exception:
         store.set_status(episode_id, "failed")
         spent = sum(c.usd for c in clips)

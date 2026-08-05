@@ -15,6 +15,7 @@ from povflow.assemble import (  # noqa: E402
     build_video_filter, target_dimensions,
 )
 from povflow.config import ConfigError, load_config  # noqa: E402
+from povflow.omni import ChainState, build_request  # noqa: E402
 from povflow.ideas import (  # noqa: E402
     Concept, Shot, drop_duplicates, parse_concepts, build_idea_prompt, IdeaError,
 )
@@ -30,6 +31,8 @@ style_preset = "fantasy"
 language = "de"
 
 [video]
+backend = "veo"
+chain_shots = false
 model = "veo-3.1-fast-generate-preview"
 resolution = "720p"
 aspect_ratio = "9:16"
@@ -44,6 +47,11 @@ max_usd_per_month = 120.0
 output_dir = "output"
 state_db = "state/db.sqlite3"
 """
+
+OMNI_CONFIG = BASE_CONFIG.replace(
+    'backend = "veo"\nchain_shots = false\nmodel = "veo-3.1-fast-generate-preview"',
+    'backend = "omni"\nchain_shots = true\nmodel = "gemini-omni-flash-preview"',
+)
 
 
 def write_config(tmp: Path, body: str = BASE_CONFIG) -> Path:
@@ -96,6 +104,95 @@ class TestConfig(unittest.TestCase):
             with self.assertRaises(ConfigError) as ctx:
                 load_config(write_config(Path(tmp), body))
             self.assertIn("No price known", str(ctx.exception))
+
+
+class TestOmniConfig(unittest.TestCase):
+    def test_chaining_adds_input_cost_to_episode(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            cfg = load_config(write_config(Path(tmp), OMNI_CONFIG))
+            self.assertEqual(cfg.backend, "omni")
+            # 5 shots x 8s x $0.10 output = $4.00, plus 4 chained shots carrying
+            # the previous 8s clip as input at 5792 tok/s and $1.50/1M.
+            expected_chain = 8 * 5792 / 1_000_000 * 1.50
+            self.assertAlmostEqual(cfg.chained_input_usd_per_shot, expected_chain)
+            self.assertAlmostEqual(cfg.usd_per_episode, 4.0 + 4 * expected_chain)
+
+    def test_no_chaining_means_no_input_surcharge(self):
+        body = OMNI_CONFIG.replace("chain_shots = true", "chain_shots = false")
+        with tempfile.TemporaryDirectory() as tmp:
+            cfg = load_config(write_config(Path(tmp), body))
+            self.assertEqual(cfg.chained_input_usd_per_shot, 0.0)
+            self.assertAlmostEqual(cfg.usd_per_episode, 4.0)
+
+    def test_veo_backend_never_charges_chaining(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            cfg = load_config(write_config(Path(tmp)))
+            self.assertEqual(cfg.chained_input_usd_per_shot, 0.0)
+
+    def test_omni_rejects_1080p(self):
+        body = OMNI_CONFIG.replace('resolution = "720p"', 'resolution = "1080p"')
+        with tempfile.TemporaryDirectory() as tmp:
+            with self.assertRaises(ConfigError) as ctx:
+                load_config(write_config(Path(tmp), body))
+            self.assertIn("only outputs 720p", str(ctx.exception))
+
+    def test_omni_rejects_clip_over_ten_seconds(self):
+        body = OMNI_CONFIG.replace("seconds_per_shot = 8", "seconds_per_shot = 12")
+        with tempfile.TemporaryDirectory() as tmp:
+            with self.assertRaises(ConfigError) as ctx:
+                load_config(write_config(Path(tmp), body))
+            self.assertIn("3-10s clips", str(ctx.exception))
+
+    def test_omni_rejects_clip_under_three_seconds(self):
+        body = OMNI_CONFIG.replace("seconds_per_shot = 8", "seconds_per_shot = 2")
+        with tempfile.TemporaryDirectory() as tmp:
+            with self.assertRaises(ConfigError):
+                load_config(write_config(Path(tmp), body))
+
+    def test_unknown_backend_rejected(self):
+        body = OMNI_CONFIG.replace('backend = "omni"', 'backend = "sora"')
+        with tempfile.TemporaryDirectory() as tmp:
+            with self.assertRaises(ConfigError) as ctx:
+                load_config(write_config(Path(tmp), body))
+            self.assertIn("backend must be one of", str(ctx.exception))
+
+
+class TestOmniRequest(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.cfg = load_config(write_config(Path(self.tmp.name), OMNI_CONFIG))
+        self.shots = build_shotlist(make_concept(shots=3), self.cfg)
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def test_first_shot_starts_a_new_scene(self):
+        req = build_request(self.cfg, self.shots[0], ChainState())
+        self.assertNotIn("previous_interaction_id", req)
+        self.assertEqual(
+            req["generation_config"]["video_config"]["task"], "text_to_video"
+        )
+        self.assertEqual(req["response_format"]["aspect_ratio"], "9:16")
+        self.assertEqual(req["model"], "gemini-omni-flash-preview")
+
+    def test_chained_shot_links_to_previous_interaction(self):
+        req = build_request(self.cfg, self.shots[1], ChainState("interaction-abc"))
+        self.assertEqual(req["previous_interaction_id"], "interaction-abc")
+        self.assertEqual(req["generation_config"]["video_config"]["task"], "edit")
+        self.assertIn("Continue the same continuous handheld take", req["input"])
+        self.assertIn("Do not restart the scene", req["input"])
+
+    def test_negatives_are_folded_into_the_prompt(self):
+        # Omni has no negative_prompt field, so they must survive in the text.
+        req = build_request(self.cfg, self.shots[0], ChainState())
+        self.assertIn("Do not include:", req["input"])
+        self.assertIn("tripod", req["input"])
+        self.assertIn("dialogue", req["input"])
+
+    def test_chaining_disabled_never_links(self):
+        self.cfg.chain_shots = False
+        req = build_request(self.cfg, self.shots[1], ChainState("interaction-abc"))
+        self.assertNotIn("previous_interaction_id", req)
 
 
 class TestState(unittest.TestCase):
