@@ -45,6 +45,15 @@ backend = "manual"
 # ist aber der Hauptgrund, Omni zu nehmen. Auf false = jeder Shot startet neu.
 chain_shots = true
 
+# Nach wie vielen Shots eine neue Szene beginnt. Jedes Kettenglied treibt die
+# Kontinuitaet weiter weg vom Original, deshalb wird bei laengeren Folgen
+# bewusst geschnitten. Bei 7 Shots und Wert 4: Szene 1 = Shot 1-4, Szene 2 = 5-7.
+max_chain_length = 4
+
+# Mindestlaenge in Sekunden, exklusiv. TikTok Creator Rewards zahlt nur fuer
+# Videos ueber einer Minute, also 60. Auf 0 setzen, um die Pruefung abzuschalten.
+min_episode_seconds = 60
+
 # Passend zum Backend:
 #   omni -> "gemini-omni-flash-preview"
 #   veo  -> "veo-3.1-fast-generate-preview" | "veo-3.1-lite-generate-preview"
@@ -62,7 +71,7 @@ aspect_ratio = "9:16"    # Hochkant fuer TikTok/Reels/Shorts
 # Flow rechnet pro Generierung ab, nicht pro Sekunde: ein 8s-Clip kostet
 # genauso viel wie ein 10s-Clip. Also immer die vollen 10s ausreizen.
 seconds_per_shot = 10    # Omni: 3-10s erlaubt. Veo: 8s.
-shots_per_episode = 4    # 4 x 10s = 40s Video
+shots_per_episode = 7    # 7 x 10s = 70s -> ueber der Creator-Rewards-Schwelle
 
 # Umgebungsgeraeusche bleiben als Bett unter deinem Voice-over liegen.
 # Auf false setzen, wenn du komplett stumme Clips willst.

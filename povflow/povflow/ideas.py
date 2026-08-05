@@ -60,19 +60,27 @@ You write concepts for vertical short-form videos that look like genuine
 first-person phone footage. The creator records a voice-over on top afterwards,
 so nobody speaks on camera and no dialogue is ever generated.
 
+The finished video runs {total_seconds} seconds. That is long-form for this
+format: it needs a real arc, not one idea stretched thin. Structure it as
+- opening ({seconds}s): the impossible thing is already happening, mid-event
+- escalation: it gets closer, bigger, or more wrong, in visible steps
+- turn (around the middle): new information that reframes what is going on
+- consequence: the situation acts on the person filming
+- final shot: unresolved, so a part 2 feels necessary
+
 Hard rules:
 - The very first frame must already show something a viewer cannot scroll past.
   Never open on an establishing shot, a title card, or a slow reveal.
 - Every shot is a single continuous handheld take from the creator's own eyes.
-- Shots must connect physically. Shot 2 continues from where shot 1 ended, in
-  the same location, same light, same weather. This is one walk, not a montage.
+- Shots must connect physically: same location, same light, same weather, unless
+  the concept deliberately moves somewhere and the movement itself is on camera.
+- Nothing may repeat. Each shot has to advance the situation, because a minute of
+  the same beat loses the viewer even when every individual shot is good.
 - Describe only what a camera can see and hear. No inner thoughts, no backstory
   that is not visible, no on-screen text.
 - The voice-over line for a shot is what the creator says while that shot plays.
   Written to be read aloud in {seconds} seconds: roughly {words} words, spoken
   language, no stage directions.
-- The last shot ends on an unresolved beat that makes a rewatch or a part 2
-  feel necessary.
 
 Answer with a JSON array only. No prose, no markdown fences.
 Each element:
@@ -99,7 +107,9 @@ def build_idea_prompt(cfg: Config, n: int, avoid_titles: list[str]) -> tuple[str
     """Return (system_prompt, user_prompt). Pure — no network."""
     words_per_shot = max(8, int(cfg.seconds_per_shot * 2.4))
     system = IDEA_SYSTEM_PROMPT.format(
-        seconds=cfg.seconds_per_shot, words=words_per_shot
+        seconds=cfg.seconds_per_shot,
+        words=words_per_shot,
+        total_seconds=cfg.episode_seconds,
     )
 
     lines = [
@@ -109,6 +119,8 @@ def build_idea_prompt(cfg: Config, n: int, avoid_titles: list[str]) -> tuple[str
         f"Voice-over language: {cfg.language}",
         f"Produce {n} concept(s), each with exactly {cfg.shots_per_episode} shots "
         f"and exactly {cfg.shots_per_episode} voice-over lines.",
+        f"Total runtime is {cfg.episode_seconds}s, so the arc has to carry "
+        f"{cfg.shots_per_episode} distinct beats without repeating itself.",
     ]
     if cfg.concept_brief:
         lines.append(f"Channel brief: {cfg.concept_brief}")

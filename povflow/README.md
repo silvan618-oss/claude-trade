@@ -44,13 +44,13 @@ wie viele Credits im Abo noch liegen.
 
 Der Unterschied ist erheblich:
 
-| | Pro Sekunde | 40s-Folge | 30 Folgen/Monat |
+| | Pro Sekunde | 70s-Folge | 23 Folgen/Monat |
 |---|---|---|---|
-| **Flow mit Credits** (2500 für 27,99 €) | ~0,017 € | **0,67 €** | **20 €** |
-| **Gemini API** (Omni Flash, 0,10 $/s) | ~0,093 € | 3,70 € | 119 € |
+| **Flow mit Credits** (2500 für 27,99 €) | ~0,017 € | **1,18 €** | **27 €** |
+| **Gemini API** (Omni Flash, 0,10 $/s) | ~0,093 € | 6,48 € | 149 € |
 
-Das ist Faktor **5,5**. 2500 Credits decken etwa **41 Folgen à 40 Sekunden** pro
-Monat ab — gut eine pro Tag.
+Das ist Faktor **5,5**. 2500 Credits decken etwa **23 Folgen à 70 Sekunden** pro
+Monat ab — knapp jeden zweiten Tag eine. Für täglich bräuchtest du ~3150 Credits.
 
 Deshalb ist der Standard hier nicht Vollautomatik, sondern der Hybrid-Modus.
 
@@ -59,6 +59,26 @@ Sekunde — 15 Credits pro Clip von bis zu 10 Sekunden. Ein 8-Sekunden-Shot kost
 also exakt dasselbe wie ein 10-Sekunden-Shot. Deshalb steht die Standardkonfiguration
 auf `seconds_per_shot = 10`: gleiche Kosten, 25 % mehr Video. `povflow costs`
 warnt dich, wenn du Sekunden verschenkst.
+
+## Creator Rewards: die Längen-Schwelle
+
+Das Programm zahlt nur für Videos **über einer Minute**. Genau 60 Sekunden
+reichen nicht. Deshalb steht der Standard auf **7 Shots × 10 s = 70 Sekunden**,
+und `min_episode_seconds = 60` bricht mit Fehlermeldung ab, wenn eine Folge
+darunter landen würde — bevor du Credits für ein Video ausgibst, das nichts
+einbringt.
+
+Weitere Bedingungen des Programms (Stand 2026): 10.000 Follower, 100.000 Views
+in 30 Tagen, Mindestalter 18, förderfähiges Land. Ausgezahlt wird erst ab 1.000
+qualifizierten Views pro Video — das sind echte For-You-Views von mindestens
+5 Sekunden aus einzelnen Accounts. Die berichteten RPMs liegen bei 0,40–1,20 $
+pro 1.000 qualifizierter Views.
+
+**Der unangenehme Teil:** TikTok bewertet Originalität, und KI-generierte oder
+wiederverwertete Inhalte bekommen dabei einen niedrigeren Wert, was die Auszahlung
+drückt. Nicht gekennzeichnete KI-Inhalte werden zusätzlich in der Reichweite
+gedrosselt. Rechne also nicht mit dem oberen Ende der RPM-Spanne — dein
+Voice-over und der Schnitt sind das, was die Folge überhaupt originell macht.
 
 ## Die drei Backends
 
@@ -81,9 +101,26 @@ Du behältst die Credit-Preise und verlierst nur den letzten Automatikschritt.
 Ideenfindung, Prompt-Handwerk, Schnitt und Skript — der zeitaufwendige Teil —
 laufen weiterhin automatisch.
 
-**In Flow wichtig:** Für Shot 2 und später nicht neu generieren, sondern die
-Szene erweitern. Ein frischer Prompt startet eine neue Welt, und die Folge fällt
-auseinander. Die `prompts.md` weist bei jedem Shot darauf hin.
+**In Flow wichtig:** Die `prompts.md` markiert jeden Shot entweder als
+`NEUE SZENE` (frisch generieren) oder als `FORTSETZUNG` (an den vorherigen Clip
+anschliessen). Wie das Anschliessen geht, hängt vom Modell ab:
+
+- **Omni:** im selben Chat weiterarbeiten und beschreiben, was als Nächstes
+  passiert — Omni behält Szene, Licht und Motiv im Kontext. Alternativ den
+  vorherigen Clip als Referenz anhängen.
+- **Veo:** der `+`-Knopf rechts an der Szene, dann `Extend` (setzt denselben Shot
+  fort, Flow wertet die letzten 24 Frames aus) oder `Jump to` (neuer Shot, Kontext
+  bleibt erhalten).
+
+Laut Google-Dokumentation funktioniert `Extend` **nur mit Veo-Clips**. Falls dein
+Flow bei Omni keine dieser Optionen anbietet, hänge den letzten Frame des
+vorherigen Clips als Standbild-Referenz an.
+
+**Warum nicht alles in einer Kette:** Jedes Kettenglied treibt die Kontinuität
+weiter weg vom Original. Bei 7 Shots wären 6 Glieder zu viel, deshalb setzt
+`max_chain_length = 4` bei Shot 5 bewusst einen Schnitt. Das ist erzählerisch
+ohnehin richtig — eine Minute in einer einzigen ununterbrochenen Einstellung
+wirkt monoton.
 
 ### `omni` — Gemini Omni Flash über die API
 
@@ -198,7 +235,7 @@ python3 -m povflow.cli history
 Hybrid-Modus in Credits, bei den API-Backends in Dollar.
 
 **Hybrid-Modus (Credits):** 15 Credits pro Clip bis 10 Sekunden. Eine Folge aus
-4 Shots kostet also 60 Credits ≈ 0,67 €, und deine 2500 Credits reichen für ~41
+7 Shots kostet also 105 Credits ≈ 1,18 €, und deine 2500 Credits reichen für ~23
 Folgen im Monat. Trag dein Abo unter `[costs.credits]` in der `config.toml` ein,
 dann stimmt die Anzeige. Falls dein Plan doch pro Sekunde abrechnet:
 `credits_per_clip = 0` setzen und `credits_per_second` eintragen.
@@ -252,10 +289,11 @@ Schreib rein, was die Serie ausmacht, und vor allem, was sie *nicht* sein soll.
 sich.
 
 **`shots_per_episode` und `seconds_per_shot`** — steuern Länge und Preis direkt.
-4 × 10 s = 40 s ist der Startwert für TikTok. `seconds_per_shot` solltest du im
-Hybrid-Modus auf 10 lassen: Kürzere Shots kosten dieselben 15 Credits, bringen
-aber weniger Video. Willst du längere Folgen, erhöhe `shots_per_episode` — jeder
-zusätzliche Shot kostet 15 Credits und bringt 10 Sekunden.
+7 × 10 s = 70 s ist der Startwert für Creator Rewards. `seconds_per_shot`
+solltest du im Hybrid-Modus auf 10 lassen: Kürzere Shots kosten dieselben 15
+Credits, bringen aber weniger Video. Willst du längere Folgen, erhöhe
+`shots_per_episode` — jeder zusätzliche Shot kostet 15 Credits und bringt 10
+Sekunden. Unter 7 kommst du nicht, ohne aus dem Programm zu fallen.
 
 Der Look selbst steckt in `povflow/style.py`. Da ist die "Style-DNA" definiert,
 die in jeden einzelnen Shot-Prompt eingebaut wird: Handkamera, Autofokus-Suchen,
@@ -350,8 +388,9 @@ mittig auf 9:16 zu. In der Ausgabe steht dann `got 1280x720, cropping to 720x128
 python3 -m unittest discover -s tests -v
 ```
 
-61 Tests, decken Konfiguration und Backend-Limits, Credit-Abrechnung pro Clip und
-pro Sekunde, Dollar-Kostenlogik inklusive Chaining-Aufschlag, Omni-Request-Aufbau,
-das Hand-off-Blatt, Clip-Erkennung beim Zusammenfügen, Ideen-Parsing, Dedup,
+70 Tests, decken Konfiguration und Backend-Limits, die Creator-Rewards-Längenprüfung,
+Szenenschnitte in der Kette, Credit-Abrechnung pro Clip und pro Sekunde,
+Dollar-Kostenlogik inklusive Chaining-Aufschlag, Omni-Request-Aufbau, das
+Hand-off-Blatt, Clip-Erkennung beim Zusammenfügen, Ideen-Parsing, Dedup,
 Prompt-Aufbau, ffmpeg-Kommandos und Voice-over-Timing ab. Die mitgelieferte
 `config.toml` wird mitgetestet, damit die dokumentierten Kosten stimmen.

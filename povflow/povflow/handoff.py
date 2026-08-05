@@ -34,11 +34,21 @@ def render_handoff(concept: Concept, shots: list[ShotPrompt], cfg: Config) -> st
         "",
         "## So gehst du vor",
         "",
-        "1. Shot 1 in Flow generieren (Prompt unten kopieren).",
-        "2. **Fuer Shot 2 bis "
-        f"{len(shots)}: nicht neu generieren.** In Flow die Szene erweitern",
-        "   bzw. den vorherigen Clip als Ausgangspunkt nehmen. Nur so bleiben",
-        "   Ort, Licht und Motiv gleich. Ein frischer Prompt startet eine neue Welt.",
+        "1. Shots mit **NEUE SZENE** normal generieren (Prompt kopieren).",
+        "2. Shots mit **FORTSETZUNG** nicht frisch prompten, sondern an den",
+        "   vorherigen Clip anschliessen. Wie das in Flow geht, haengt vom Modell ab:",
+        "",
+        "   - **Omni:** im selben Chat weiterarbeiten und beschreiben, was als",
+        "     Naechstes passiert. Omni behaelt Szene, Licht und Motiv im Kontext.",
+        "     Alternativ den vorherigen Clip als Referenz anhaengen.",
+        "   - **Veo:** der `+`-Knopf rechts an der Szene, dann `Extend` (setzt",
+        "     denselben Shot fort) oder `Jump to` (neuer Shot, Kontext bleibt).",
+        "     Laut Google-Doku funktioniert `Extend` **nur mit Veo-Clips**.",
+        "",
+        "   Falls dein Flow keine dieser Optionen anbietet: Prompt normal nutzen,",
+        "   aber vorher einen Standbild-Export des letzten Frames als Referenz",
+        "   anhaengen. Ein voellig frischer Prompt startet sonst eine neue Welt.",
+        "",
         "3. Jeden Clip herunterladen und exakt so benennen wie unten angegeben,",
         "   in den Unterordner `shots/`.",
         "4. Danach im Projektordner:",
@@ -64,11 +74,19 @@ def render_handoff(concept: Concept, shots: list[ShotPrompt], cfg: Config) -> st
     ]
 
     for shot in shots:
-        label = "Shot 1 — neu generieren" if shot.index == 1 else (
-            f"Shot {shot.index} — Szene aus Shot {shot.index - 1} erweitern"
-        )
+        if shot.starts_new_chain:
+            label = f"Shot {shot.index} — NEUE SZENE"
+            note = (
+                "Frisch generieren. Hier darf geschnitten werden."
+                if shot.index > 1 else "Frisch generieren."
+            )
+        else:
+            label = f"Shot {shot.index} — FORTSETZUNG von Shot {shot.index - 1}"
+            note = "Nicht neu prompten, an den vorherigen Clip anschliessen."
         out += [
             f"## {label}",
+            "",
+            note,
             "",
             f"Speichern als: `shots/shot_{shot.index:02d}.mp4`",
             "",

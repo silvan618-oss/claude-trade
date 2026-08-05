@@ -47,6 +47,8 @@ class ConfigError(Exception):
 class Config:
     backend: str
     chain_shots: bool
+    max_chain_length: int
+    min_episode_seconds: int
 
     niche: str
     style_preset: str
@@ -201,6 +203,8 @@ def load_config(config_path: Path, env_path: Path | None = None) -> Config:
     cfg = Config(
         backend=backend,
         chain_shots=bool(video.get("chain_shots", True)),
+        max_chain_length=int(video.get("max_chain_length", 4)),
+        min_episode_seconds=int(video.get("min_episode_seconds", 0)),
         niche=channel.get("niche", "fantasy"),
         style_preset=channel.get("style_preset", "fantasy"),
         audience=channel.get("audience", "TikTok and Reels, 16-30"),
@@ -249,6 +253,19 @@ def _validate(cfg: Config) -> None:
         raise ConfigError(f"resolution must be '720p' or '1080p', got {cfg.resolution!r}")
     if cfg.max_usd_per_run <= 0 or cfg.max_usd_per_month <= 0:
         raise ConfigError("Budget caps must be positive")
+    if cfg.max_chain_length < 1:
+        raise ConfigError("max_chain_length must be at least 1")
+
+    # TikTok Creator Rewards only pays out on videos over a minute, and an
+    # episode that lands under the threshold earns nothing at all.
+    if cfg.min_episode_seconds and cfg.episode_seconds <= cfg.min_episode_seconds:
+        raise ConfigError(
+            f"Episode is {cfg.episode_seconds}s but min_episode_seconds is "
+            f"{cfg.min_episode_seconds}s, and the threshold is exclusive — a video "
+            f"of exactly {cfg.min_episode_seconds}s does not qualify. "
+            f"Raise shots_per_episode to "
+            f"{cfg.min_episode_seconds // cfg.seconds_per_shot + 1} or more."
+        )
 
     if cfg.is_manual:
         # No API call, so no rate lookup, no budget check, and no model limits:

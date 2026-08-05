@@ -88,6 +88,9 @@ def produce_episode(
 
             chain = ChainState()
             for shot in shotlist:
+                if shot.starts_new_chain:
+                    # Bound the drift: a new scene starts from a clean context.
+                    chain.interaction_id = None
                 linked = " (continuing previous shot)" if chain.interaction_id else ""
                 print(f"  shot {shot.index}/{len(shotlist)} generating{linked} ...")
                 clips.append(

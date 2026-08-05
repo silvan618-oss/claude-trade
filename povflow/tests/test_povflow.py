@@ -21,7 +21,9 @@ from povflow.omni import ChainState, build_request  # noqa: E402
 from povflow.ideas import (  # noqa: E402
     Concept, Shot, drop_duplicates, parse_concepts, build_idea_prompt, IdeaError,
 )
-from povflow.shotlist import build_shot_prompt, build_shotlist  # noqa: E402
+from povflow.shotlist import (  # noqa: E402
+    build_shot_prompt, build_shotlist, chain_starts,
+)
 from povflow.state import Store, idea_fingerprint, slugify  # noqa: E402
 from povflow.style import NEGATIVE_PROMPT, POV_STYLE_DNA  # noqa: E402
 from povflow.voiceover import build_vo_lines, format_timecode, render_script, render_srt  # noqa: E402
@@ -184,12 +186,30 @@ class TestManualBackend(unittest.TestCase):
             self.assertIn(f"shots/shot_{i:02d}.mp4", sheet)
         self.assertIn(concept.hook_visual, sheet)
 
-    def test_handoff_tells_you_to_extend_not_regenerate(self):
+    def test_handoff_marks_continuations_and_scene_starts(self):
         concept = make_concept(shots=3)
         sheet = render_handoff(concept, build_shotlist(concept, self.cfg), self.cfg)
-        self.assertIn("Shot 1 — neu generieren", sheet)
-        self.assertIn("Szene aus Shot 1 erweitern", sheet)
-        self.assertIn("Szene aus Shot 2 erweitern", sheet)
+        self.assertIn("Shot 1 — NEUE SZENE", sheet)
+        self.assertIn("Shot 2 — FORTSETZUNG von Shot 1", sheet)
+        self.assertIn("Shot 3 — FORTSETZUNG von Shot 2", sheet)
+
+    def test_handoff_does_not_claim_extend_works_for_omni(self):
+        # Google's docs say Extend is Veo-only, so the sheet must not present it
+        # as the way to continue an Omni clip.
+        concept = make_concept(shots=3)
+        sheet = render_handoff(concept, build_shotlist(concept, self.cfg), self.cfg)
+        self.assertIn("nur mit Veo-Clips", sheet)
+        self.assertIn("im selben Chat", sheet)
+
+    def test_handoff_marks_scene_break_at_chain_boundary(self):
+        body = MANUAL_CONFIG.replace("shots_per_episode = 5", "shots_per_episode = 7") \
+                            .replace("[costs]", "max_chain_length = 4\n\n[costs]", 1)
+        with tempfile.TemporaryDirectory() as tmp:
+            cfg = load_config(write_config(Path(tmp), body))
+            concept = make_concept(shots=7)
+            sheet = render_handoff(concept, build_shotlist(concept, cfg), cfg)
+            self.assertIn("Shot 5 — NEUE SZENE", sheet)
+            self.assertIn("Shot 4 — FORTSETZUNG von Shot 3", sheet)
 
     def test_handoff_states_credit_cost(self):
         concept = make_concept(shots=5)
@@ -200,14 +220,68 @@ class TestManualBackend(unittest.TestCase):
 class TestShippedConfig(unittest.TestCase):
     """The config that ships in the repo must load and match the documented cost."""
 
-    def test_default_config_is_valid_and_wastes_nothing(self):
+    def test_default_config_clears_creator_rewards_and_wastes_nothing(self):
         cfg = load_config(Path(__file__).resolve().parent.parent / "config.toml")
         self.assertTrue(cfg.is_manual)
-        self.assertEqual(cfg.episode_seconds, 40)
-        self.assertAlmostEqual(cfg.credits_per_episode, 60.0)
-        self.assertAlmostEqual(cfg.eur_per_episode_credits, 60 * 27.99 / 2500, places=4)
-        self.assertEqual(cfg.episodes_per_plan, 41)
+        # Must be strictly over the 60s threshold, not equal to it.
+        self.assertEqual(cfg.episode_seconds, 70)
+        self.assertGreater(cfg.episode_seconds, cfg.min_episode_seconds)
+        self.assertAlmostEqual(cfg.credits_per_episode, 105.0)
+        self.assertAlmostEqual(cfg.eur_per_episode_credits, 105 * 27.99 / 2500, places=4)
+        self.assertEqual(cfg.episodes_per_plan, 23)
         self.assertEqual(cfg.wasted_seconds_per_clip, 0.0)
+
+
+class TestCreatorRewardsLength(unittest.TestCase):
+    def test_episode_at_exactly_the_threshold_is_rejected(self):
+        # 60s does not qualify; the rule is "longer than one minute".
+        body = MANUAL_CONFIG.replace(
+            "seconds_per_shot = 8", "seconds_per_shot = 10"
+        ).replace("shots_per_episode = 5", "shots_per_episode = 6") \
+         .replace("[costs]", "min_episode_seconds = 60\n\n[costs]", 1)
+        with tempfile.TemporaryDirectory() as tmp:
+            with self.assertRaises(ConfigError) as ctx:
+                load_config(write_config(Path(tmp), body))
+            self.assertIn("does not qualify", str(ctx.exception))
+            self.assertIn("7 or more", str(ctx.exception))
+
+    def test_episode_over_the_threshold_is_accepted(self):
+        body = MANUAL_CONFIG.replace(
+            "seconds_per_shot = 8", "seconds_per_shot = 10"
+        ).replace("shots_per_episode = 5", "shots_per_episode = 7") \
+         .replace("[costs]", "min_episode_seconds = 60\n\n[costs]", 1)
+        with tempfile.TemporaryDirectory() as tmp:
+            cfg = load_config(write_config(Path(tmp), body))
+            self.assertEqual(cfg.episode_seconds, 70)
+
+    def test_check_is_off_when_threshold_is_zero(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            cfg = load_config(write_config(Path(tmp), MANUAL_CONFIG))
+            self.assertEqual(cfg.min_episode_seconds, 0)
+            self.assertEqual(cfg.episode_seconds, 40)
+
+
+class TestChainBreaks(unittest.TestCase):
+    def test_breaks_land_at_the_configured_interval(self):
+        self.assertEqual(chain_starts(7, 4), {1, 5})
+        self.assertEqual(chain_starts(7, 3), {1, 4, 7})
+        self.assertEqual(chain_starts(6, 3), {1, 4})
+
+    def test_short_episode_is_a_single_chain(self):
+        self.assertEqual(chain_starts(4, 4), {1})
+
+    def test_chain_length_of_one_breaks_every_shot(self):
+        self.assertEqual(chain_starts(3, 1), {1, 2, 3})
+
+    def test_scene_start_drops_the_continues_from_line(self):
+        body = MANUAL_CONFIG.replace("shots_per_episode = 5", "shots_per_episode = 7") \
+                            .replace("[costs]", "max_chain_length = 4\n\n[costs]", 1)
+        with tempfile.TemporaryDirectory() as tmp:
+            cfg = load_config(write_config(Path(tmp), body))
+            shots = build_shotlist(make_concept(shots=7), cfg)
+            self.assertTrue(shots[4].starts_new_chain)
+            self.assertNotIn("Continues directly from", shots[4].prompt)
+            self.assertIn("Continues directly from", shots[3].prompt)
 
 
 class TestAssembleFolder(unittest.TestCase):
