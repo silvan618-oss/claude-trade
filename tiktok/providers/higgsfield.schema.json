@@ -1,0 +1,44 @@
+{
+  "_comment": [
+    "Beschreibung der Higgsfield-HTTP-API. Bewusst als Datei und nicht als Code,",
+    "damit sich eine geaenderte API-Signatur ohne Codeaenderung nachziehen laesst.",
+    "Pruefe die Werte gegen docs.higgsfield.ai, bevor du VIDEO_PROVIDER=higgsfield nutzt.",
+    "Platzhalter in Pfaden/Bodies: {model} {prompt} {seconds} {aspect_ratio} {source_id} {job_id}",
+    "Feldpfade duerfen Punkte und Indizes enthalten, z. B. results.0.url"
+  ],
+  "auth_header": "Authorization",
+  "auth_prefix": "Bearer ",
+  "generate": {
+    "method": "POST",
+    "path": "/v1/video/generations",
+    "body": {
+      "model": "{model}",
+      "prompt": "{prompt}",
+      "duration": "{seconds}",
+      "aspect_ratio": "{aspect_ratio}"
+    },
+    "job_id_field": "id"
+  },
+  "extend": {
+    "method": "POST",
+    "path": "/v1/video/generations",
+    "body": {
+      "model": "{model}",
+      "prompt": "{prompt}",
+      "duration": "{seconds}",
+      "aspect_ratio": "{aspect_ratio}",
+      "extend_from": "{source_id}"
+    },
+    "job_id_field": "id"
+  },
+  "status": {
+    "method": "GET",
+    "path": "/v1/video/generations/{job_id}",
+    "status_field": "status",
+    "done_values": ["completed", "succeeded", "success", "done"],
+    "failed_values": ["failed", "error", "canceled", "rejected"],
+    "video_url_field": "results.0.url",
+    "video_id_field": "results.0.id",
+    "error_field": "error"
+  }
+}

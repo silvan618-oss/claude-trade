@@ -1,0 +1,41 @@
+{
+  "slug": "silver-influencer",
+  "name": "Silver — POV",
+  "language": "de",
+  "persona": "Silver — Mitte 20, trockener Humor, redet zur Kamera wie zu einem Freund. Keine Werbestimme, keine Uebertreibung, kurze Saetze, echte Pausen.",
+  "bible": "Ein KI-generierter Creator-Account. Jedes Video ist ein kurzer POV-Moment aus einem Leben, das man beneidet oder das gerade schiefgeht — beides funktioniert. Das Versprechen: in 40 Sekunden eine Mini-Geschichte mit Wendung, die sich anfuehlt, als haette jemand zufaellig die Kamera mitlaufen lassen. Nie 'Content ueber Content', nie Lifehack-Listen, nie direkt in die Kamera verkaufen. Wichtig: keine realen Personen imitieren, keine echten Marken nachbauen, keine erfundenen Nachrichten als Tatsachen darstellen.",
+  "visual_style": "authentic smartphone-style footage, vertical 9:16, natural available light, slight handheld motion and micro-shake, realistic skin texture and pores, imperfect framing, everyday color grade, subtle lens flare, no text overlays, no watermark",
+  "negative_prompt": "studio lighting, glossy advertisement look, cgi, uncanny face, plastic skin, watermark, text, logo, celebrity likeness, brand logos",
+  "domains": [
+    "Reisen an Orte, die niemand auf dem Schirm hat",
+    "Alltagsmomente, die kippen",
+    "Skills, die man in einem Tag lernen kann",
+    "Kleine Selbstexperimente ueber 24 Stunden",
+    "Nachts in Staedten, wenn niemand mehr unterwegs ist",
+    "Essen an Orten, an denen man es nicht erwartet",
+    "Dinge, die teuer aussehen und billig sind (und umgekehrt)",
+    "Begegnungen mit Fremden"
+  ],
+  "angles": [
+    "Erwartung gegen Realitaet",
+    "Es laeuft gut, bis zu Sekunde 20",
+    "Ein Versprechen am Anfang, das erst am Ende eingeloest wird",
+    "Countdown auf eine Entscheidung",
+    "Der unscheinbare Moment ist der eigentliche Punkt",
+    "Man sieht das Ergebnis zuerst, dann den Weg dahin"
+  ],
+  "target_seconds": 40,
+  "clip_seconds": 10,
+  "words_per_second": 2.6,
+  "voice": {
+    "provider": "elevenlabs",
+    "voice_id": "",
+    "stability": 0.4,
+    "similarity_boost": 0.75,
+    "style": 0.5,
+    "speed": 1.05
+  },
+  "hashtags": ["#pov", "#storytime", "#fyp"],
+  "cta": "Teil 2 kommt.",
+  "aspect_ratio": "9:16"
+}

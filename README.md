@@ -1,4 +1,14 @@
-# claude-trade — Lernfähiger AI Trading Bot
+# claude-trade
+
+Zwei Projekte in einem Repo:
+
+- **Trading-Bot** (unten) — lernfähiger AI-Trading-Bot mit Zwei-Datei-Gedächtnis.
+- **[TikTok-Produktion](README-tiktok.md)** (`tiktok/`) — vollautomatische
+  Videoproduktion: Idee → Skript → Clips → Voiceover → Schnitt → fertiges Video.
+
+---
+
+## Lernfähiger AI Trading Bot
 
 Ein Trading-Bot nach dem 3-Schritte-System aus *"how to actually build an AI trading bot"* (Miles Deutscher): Ein LLM (Claude) als **Gehirn**, eine Broker-Anbindung als **Hände** — und vor allem ein **Zwei-Datei-Gedächtnis**, damit der Bot aus Fehlern lernt, statt denselben Fehler zweimal zu machen.
 

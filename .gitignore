@@ -4,3 +4,7 @@ __pycache__/
 .pytest_cache/
 .venv/
 venv/
+output/
+memory/videos.jsonl
+memory/used.json
+memory/video_lessons.md

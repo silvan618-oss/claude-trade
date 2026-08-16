@@ -1,0 +1,45 @@
+{
+  "slug": "silver-wildlife",
+  "name": "Silver — Wildlife",
+  "language": "de",
+  "persona": "Silver — ruhige, dunkle Erzaehlerstimme. Kein Zoo-Paedagoge, kein Comedian. Erzaehlt wie jemand, der wirklich draussen war und etwas gesehen hat, das er nicht ganz erklaeren kann.",
+  "bible": "Tierdokumentation im Kinoformat, aber auf TikTok-Tempo geschnitten. Das Versprechen an den Zuschauer: In 40 Sekunden erfaehrst du EINE Sache ueber ein Tier, die dir niemand erzaehlt hat, und du siehst dabei Bilder, die aussehen wie ein Naturfilm mit Kinobudget. Nie 'Wusstest du schon'-Aufzaehlungen, immer eine einzige Geschichte mit Wendung. Fakten muessen stimmen und ueberpruefbar sein — keine erfundenen Zahlen.",
+  "visual_style": "photorealistic wildlife documentary cinematography, shot on ARRI Alexa with long telephoto lens, shallow depth of field, natural volumetric light, fine skin and fur detail, subtle handheld camera weight, filmic color grade with deep shadows and warm highlights, 35mm grain, no text overlays, no watermark, no on-screen captions",
+  "negative_prompt": "cartoon, 3d render, cgi look, plastic fur, oversaturated, distorted anatomy, extra limbs, watermark, text, logo, slow motion cliche, stock footage look",
+  "domains": [
+    "Raubtiere und ihre Jagdtechnik",
+    "Tiefsee und Extremlebensraeume",
+    "Tierische Sinne, die Menschen fehlen",
+    "Ueberlebensstrategien in Kaelte, Hitze, Duerre",
+    "Symbiosen und Zweckbuendnisse zwischen Arten",
+    "Wanderungen und Orientierung ueber tausende Kilometer",
+    "Elterntiere und ihre Aufzuchtstrategien",
+    "Tiere, die aelter werden als Menschen",
+    "Gift, Tarnung und chemische Kriegsfuehrung",
+    "Tiere in Staedten und an Orten, an die sie nicht gehoeren"
+  ],
+  "angles": [
+    "Fehlannahme aufloesen: alle glauben X, in Wahrheit Y",
+    "Der Jaeger wird zum Gejagten",
+    "Ein Detail, das man erst beim zweiten Hinsehen bemerkt",
+    "Zwei Arten im direkten Vergleich, eine gewinnt unerwartet",
+    "Countdown auf einen einzigen entscheidenden Moment",
+    "Perspektive des Beutetiers statt des Raubtiers",
+    "Eine Zahl, die zu absurd klingt, um wahr zu sein",
+    "Was passiert, wenn der Plan des Tieres schiefgeht"
+  ],
+  "target_seconds": 40,
+  "clip_seconds": 10,
+  "words_per_second": 2.4,
+  "voice": {
+    "provider": "elevenlabs",
+    "voice_id": "",
+    "stability": 0.45,
+    "similarity_boost": 0.8,
+    "style": 0.35,
+    "speed": 1.0
+  },
+  "hashtags": ["#tiere", "#wildlife", "#natur", "#fakten", "#doku"],
+  "cta": "Folge fuer den naechsten Teil.",
+  "aspect_ratio": "9:16"
+}
