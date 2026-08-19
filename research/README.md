@@ -558,3 +558,69 @@ hat nicht das beste Muster gefunden, sondern das glücklichste.
 
 Genau dagegen ist der Kontrolllauf gebaut: Er zeigt, wie viele Lottogewinner die Suche
 allein durch ihre eigene Größe produziert.
+
+---
+
+# Die Muster, die es wirklich gibt
+
+Alle Studien oben suchen nach Kurzfrist-Signalen — Stunden bis Wochen. Das ist der am
+härtesten umkämpfte Bereich des Marktes, und dort war nichts. Es gibt aber eine zweite
+Familie von Mustern, die seit Jahrzehnten dokumentiert ist. Sie unterscheidet sich in
+drei Punkten:
+
+- Sie wirkt im **Querschnitt**: nicht „steigt diese Aktie", sondern „steigt sie stärker
+  als die anderen"
+- Sie braucht **Monate**, nicht Stunden
+- Sie ist keine Prognose, sondern eine **Risikoprämie** — man wird dafür bezahlt, etwas
+  zu halten, das andere nicht halten wollen
+
+## Ergebnis
+
+Bestes Fünftel kaufen, schlechtestes verkaufen, monatlich umschichten, marktneutral.
+95 Aktien, 2010–2026:
+
+| Signal | pro Jahr | Sharpe | t | max. Drawdown |
+|---|---:|---:|---:|---:|
+| **Momentum (12 Monate ohne den letzten)** | **+6,88 %** | **+0,30** | +1,17 | −37,0 % |
+| Kurzfrist-Gegenbewegung (1 Monat) | +0,38 % | +0,02 | +0,08 | −40,8 % |
+| Langfrist-Gegenbewegung (5–1 Jahre) | −2,97 % | −0,15 | −0,52 | −62,9 % |
+| Niedrige Volatilität | −20,83 % | −0,88 | −3,52 | −98,7 % |
+
+**Momentum ist das erste Signal in diesem ganzen Repo, das die Halbierung übersteht:**
+
+| | bis 2018 | ab 2018 |
+|---|---:|---:|
+| Momentum | t = +0,94, Sharpe +0,36 | t = +0,81, Sharpe +0,28 |
+
+Kein Zusammenbruch, kein Vorzeichenwechsel. Genau das, woran alles andere gescheitert ist.
+
+## Zwei Warnungen zum eigenen Ergebnis
+
+**Der t-Wert von 1,17 ist nicht entscheidend.** Auf 95 Aktien über 16 Jahre lässt sich
+Momentum nicht beweisen. Der Wert ist, dass er zur umfangreichen Literatur passt (die
+mit tausenden Aktien über 90 Jahre arbeitet) und dass er in beiden Hälften steht.
+
+**Der Volatilitätseffekt ist ein Artefakt.** Er sieht mit t = −3,52 am stärksten aus und
+ist der unglaubwürdigste Wert der Tabelle. Grund: Survivorship Bias. Im wildesten
+Viertel liegt der mittlere Gesamtfaktor bei 63,30, der Median aber bei 13,14 — die
+Verzerrung kommt von wenigen Überlebenden wie NVDA. Das Universum ist die
+Zusammensetzung von heute, und die wilden Aktien, die es bis heute geschafft haben,
+sind genau die, die gewaltig gestiegen sind.
+
+Das ist derselbe Bias, der ganz oben in diesem Dokument als Einschränkung steht — hier
+sieht man ihn zum ersten Mal wirken.
+
+## Momentum verträgt keinen Hebel
+
+| Haltedauer | pro Jahr | Sharpe | max. Drawdown |
+|---|---:|---:|---:|
+| 1 Monat | +6,89 % | +0,30 | −37,0 % |
+| 3 Monate | +3,39 % | +0,19 | −43,8 % |
+| 6 Monate | +1,62 % | +0,06 | −69,1 % |
+| 12 Monate | −0,55 % | −0,02 | −87,3 % |
+
+Der schlechteste Einzelmonat der Strategie: **−26,28 %**. Mit Hebel 30 wären das −788 %.
+
+> **Höchster Hebel, den dieses Signal überhaupt verträgt: 3,8**
+
+Nicht 30. Nicht 50. Das ist die Zahl, an der sich die ganze Frage entscheidet.

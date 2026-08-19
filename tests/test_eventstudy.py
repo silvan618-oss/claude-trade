@@ -690,3 +690,65 @@ class TestDiscovery:
         result = validate_out_of_sample(dataset, "2021-01-01", min_count=100)
         # Der Trainingsteil darf keine Daten aus dem Haltezeitraum enthalten.
         assert "gefunden" in result and "geprueft" in result
+
+
+class TestFactors:
+    """Querschnitts-Signale ueber Monate."""
+
+    def _panel(self, n_symbols=40, n_days=1600, seed=11):
+        rng = np.random.default_rng(seed)
+        dates = pd.bdate_range("2015-01-01", periods=n_days)
+        parts = []
+        for i in range(n_symbols):
+            close = 100 * np.exp(np.cumsum(rng.normal(0.0003, 0.015, n_days)))
+            parts.append(pd.DataFrame({"date": dates, "symbol": f"S{i}", "close": close}))
+        return pd.concat(parts, ignore_index=True)
+
+    def test_momentum_skips_the_most_recent_month(self):
+        """Momentum 12-1 darf den juengsten Monat NICHT enthalten."""
+        from research.factors import add_signals, TRADING_DAYS_PER_MONTH as M
+        n = 300
+        close = np.full(n, 100.0)
+        close[-M:] = 200.0  # nur der letzte Monat explodiert
+        panel = pd.DataFrame({"date": pd.bdate_range("2020-01-01", periods=n),
+                              "symbol": "S", "close": close})
+        signals = add_signals(panel)
+        # Der Sprung liegt komplett im ausgelassenen Monat -> Momentum bleibt null.
+        assert signals["momentum_12_1"].iloc[-1] == pytest.approx(0.0, abs=1e-9)
+
+    def test_signals_use_only_past_prices(self):
+        from research.factors import add_signals
+        panel = self._panel(n_symbols=3, n_days=1600)
+        full = add_signals(panel)
+        cut_date = panel["date"].iloc[1200]
+        partial = add_signals(panel[panel["date"] <= cut_date])
+
+        for column in ("momentum_12_1", "reversal_1m", "reversal_lang", "tief_vola"):
+            a = full[full["date"] <= cut_date].sort_values(["symbol", "date"])[column]
+            b = partial.sort_values(["symbol", "date"])[column]
+            both = a.to_numpy(), b.to_numpy()
+            mask = ~(np.isnan(both[0]) | np.isnan(both[1]))
+            assert np.allclose(both[0][mask], both[1][mask]), f"{column} nutzt Zukunft"
+
+    def test_long_short_is_market_neutral_by_construction(self):
+        """Steigt alles gleich stark, muss die Long/Short-Rendite null sein."""
+        from research.factors import add_forward, add_signals, long_short_returns
+        n_days, n_symbols = 900, 30
+        dates = pd.bdate_range("2015-01-01", periods=n_days)
+        # Alle Aktien mit identischem Verlauf -> kein Querschnittsunterschied.
+        close = 100 * np.exp(np.cumsum(np.full(n_days, 0.001)))
+        panel = pd.concat([pd.DataFrame({"date": dates, "symbol": f"S{i}", "close": close})
+                           for i in range(n_symbols)], ignore_index=True)
+        result = long_short_returns(add_forward(add_signals(panel)), "momentum_12_1")
+        if not result.empty:
+            assert result.abs().max() < 1e-9
+
+    def test_summarise_reports_drawdown(self):
+        from research.factors import summarise
+        # summarise verlangt mindestens 6 Perioden fuer belastbare Kennzahlen.
+        values = [0.10, -0.50, 0.10, 0.05, 0.05, 0.05, 0.05, 0.05]
+        returns = pd.Series(values, index=pd.date_range("2020-01-01", periods=8, freq="ME"))
+        stats = summarise(returns)
+        assert stats["max_drawdown_%"] == pytest.approx(-50.0, abs=0.5)
+        assert stats["gewinn_perioden_%"] == pytest.approx(87.5)
+        assert stats["n_perioden"] == 8
