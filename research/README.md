@@ -799,3 +799,21 @@ die Hälfte des Kapitals aushalten.
 Realistische Erwartung nach allen Abzügen liegt eher bei den +3,8 Prozentpunkten des
 Gesamtzeitraums als bei den +6,7 des guten Jahrzehnts — und Steuern sind darin noch
 nicht enthalten.
+
+## Die Strategie ausführen
+
+```bash
+python -m research.signal_cli                        # aktuelle 15 Positionen
+python -m research.signal_cli --halten 20 --lookback 126
+```
+
+Gibt aus, welche Aktien die Regel gerade halten würde, was neu dazukommt, was rausfliegt
+und wie hoch der Umschlag ist — plus die Rückrechnung gegen die Zufallskontrolle.
+
+Der monatliche Umschlag liegt typischerweise bei 10–20 %, also zwei bis drei Wechsel
+von fünfzehn Positionen. Das ist der Aufwand: einmal im Monat zwei Order.
+
+**Erwartung, ehrlich:** Der Vorsprung des Gesamtzeitraums (+3,8 pp p.a.) ist die
+realistischere Planungsgröße als der des guten Jahrzehnts (+6,7 pp). Steuern kommen
+noch ab. Und es wird Jahre geben, in denen die Regel schlechter läuft als der Index —
+1999–2009 war fast das ganze Jahrzehnt so, bei −50 % Drawdown.

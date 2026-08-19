@@ -41,6 +41,7 @@ belastbarer Drift messbar. Mit Hebel 50 werden 69 % der Positionen ausgeknockt â
 darunter fast die HÃ¤lfte derer, deren Richtung am Ende richtig war.
 
 ```bash
+python -m research.signal_cli  # << die Strategie: monatliche Signalliste
 python -m research.cli      # Ereignisse: was passiert nach Nachrichten
 python -m research.tf_cli   # Multi-Timeframe: bringt Einigkeit der Zeitebenen etwas
 python -m research.ml_cli   # Mustererkennung: lernt ein Modell die Zukunft?
