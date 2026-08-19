@@ -29,6 +29,26 @@ Markt prüfen → Setup entscheiden (inkl. Lektionen-Check durch Claude) → Tra
 
 Der Kreislauf: Vor jedem Einstieg liest der Bot `lessons.md` und lässt Claude das Setup dagegen prüfen (Veto möglich). Schließt ein Trade im Minus, formuliert Claude eine neue, konkrete Regel und hängt sie an die Lern-Datei an. Für High-Frequency-Setups mit vielen Daten lässt sich diese Schicht 1:1 gegen eine Cloud-Datenbank wie **Supabase** tauschen — die `Memory`-Schnittstelle bleibt gleich.
 
+## Ereignis-Studie: rechnet nach, ob die Idee überhaupt trägt
+
+Bevor man einen Bot mit Geld laufen lässt, sollte man wissen, ob das Signal, auf das
+er wettet, überhaupt existiert. Genau dafür ist [`research/`](research/README.md) da.
+
+Die Studie misst an 2.767 echten Ereignissen über zehn Jahre, was nach
+nachrichtengetriebenen Kurssprüngen passiert. Kurzergebnis: Über 95 % der Bewegung
+liegt im Übernacht-Gap und ist damit vorbei, bevor man handeln kann. Danach ist kein
+belastbarer Drift messbar. Mit Hebel 50 werden 69 % der Positionen ausgeknockt —
+darunter fast die Hälfte derer, deren Richtung am Ende richtig war.
+
+```bash
+python -m research.cli
+```
+
+Der wichtigere Teil ist aber nicht das Ergebnis, sondern das Werkzeug: eine
+Zufallskontrollgruppe, geclusterte t-Werte und eine Pfadsimulation für Hebelprodukte.
+Damit lässt sich **jede** neue Idee prüfen, statt sie zu glauben.
+
+
 ## Setup
 
 ```bash

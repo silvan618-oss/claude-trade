@@ -1,4 +1,11 @@
+# Trading-Bot
 alpaca-py>=0.33.0
 anthropic>=0.50.0
 python-dotenv>=1.0.0
+
+# Ereignis-Studie
+pandas>=2.0.0
+numpy>=1.24.0
+requests>=2.31.0
+
 pytest>=8.0.0
