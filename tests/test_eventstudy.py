@@ -477,3 +477,86 @@ class TestIntradayKnockout:
         trades = simulate_holds(bars, leverage=30, hold_bars=2, side=-1,
                                 costs=IntradayCosts(spread=0.0))
         assert bool(trades.at[0, "ausgeknockt"]) is True
+
+
+class TestPatterns:
+    """Muster muessen genau das erkennen, was ihr Name sagt."""
+
+    def _candles(self, rows):
+        """rows: Liste von (open, high, low, close)."""
+        n = len(rows)
+        arr = np.array(rows, dtype=float)
+        return pd.DataFrame({
+            "date": pd.bdate_range("2020-01-01", periods=n),
+            "open": arr[:, 0], "high": arr[:, 1], "low": arr[:, 2], "close": arr[:, 3],
+            "volume": np.full(n, 1000.0), "adjclose": arr[:, 3],
+        })
+
+    def test_bullish_engulfing_needs_full_body_cover(self):
+        from research.patterns import detect_patterns
+        # Tag 1 rot (102 -> 100), Tag 2 gruen und umschliesst den Koerper (99 -> 103).
+        frame = self._candles([(102, 102, 100, 100), (99, 103.5, 98.5, 103)])
+        assert bool(detect_patterns(frame)["bullish_engulfing"].iloc[1]) is True
+
+        # Gruener Koerper zu klein -> kein Engulfing.
+        frame = self._candles([(102, 102, 100, 100), (100.5, 102, 100, 101.5)])
+        assert bool(detect_patterns(frame)["bullish_engulfing"].iloc[1]) is False
+
+    def test_doji_requires_tiny_body(self):
+        from research.patterns import detect_patterns
+        frame = self._candles([(100, 103, 97, 100.1)])   # Koerper 0,1 von 6 Spanne
+        assert bool(detect_patterns(frame)["doji"].iloc[0]) is True
+        frame = self._candles([(100, 103, 97, 102.5)])
+        assert bool(detect_patterns(frame)["doji"].iloc[0]) is False
+
+    def test_inside_and_outside_bar_are_opposites(self):
+        from research.patterns import detect_patterns
+        inside = self._candles([(100, 105, 95, 100), (100, 103, 97, 101)])
+        found = detect_patterns(inside)
+        assert bool(found["inside_bar"].iloc[1]) is True
+        assert bool(found["outside_bar"].iloc[1]) is False
+
+        outside = self._candles([(100, 103, 97, 100), (100, 106, 94, 101)])
+        found = detect_patterns(outside)
+        assert bool(found["outside_bar"].iloc[1]) is True
+        assert bool(found["inside_bar"].iloc[1]) is False
+
+    def test_three_black_crows_needs_three_falling_reds(self):
+        from research.patterns import detect_patterns
+        rows = [(100, 100, 99, 99), (99, 99, 98, 98), (98, 98, 97, 97)]
+        assert bool(detect_patterns(self._candles(rows))["three_black_crows"].iloc[2]) is True
+        # Eine gruene Kerze dazwischen bricht das Muster.
+        rows = [(100, 100, 99, 99), (98, 99.5, 98, 99.5), (99.5, 99.5, 97, 97)]
+        assert bool(detect_patterns(self._candles(rows))["three_black_crows"].iloc[2]) is False
+
+    def test_pattern_uses_no_future_candles(self):
+        """Kernprobe: spaetere Kerzen loeschen darf frueher erkannte Muster nicht aendern."""
+        from research.patterns import detect_patterns, PATTERN_NAMES
+        rng = np.random.default_rng(3)
+        n = 300
+        close = 100 * np.exp(np.cumsum(rng.normal(0, 0.015, n)))
+        openp = close * (1 + rng.normal(0, 0.004, n))
+        high = np.maximum(openp, close) * (1 + abs(rng.normal(0, 0.006, n)))
+        low = np.minimum(openp, close) * (1 - abs(rng.normal(0, 0.006, n)))
+        full = self._candles(list(zip(openp, high, low, close)))
+
+        cut = 200
+        a = detect_patterns(full).iloc[:cut]
+        b = detect_patterns(full.iloc[:cut].copy())
+        for name in PATTERN_NAMES:
+            assert a[name].equals(b[name]), f"Muster {name!r} nutzt spaetere Kerzen"
+
+    def test_market_adjustment_changes_bearish_verdict(self):
+        """Ohne Marktbereinigung messen Short-Muster den Aufwaertsdrift mit."""
+        from research.patterns import build_pattern_dataset
+        rng = np.random.default_rng(1)
+        n = 400
+        # Markt mit klarem Aufwaertsdrift, Aktie folgt ihm exakt.
+        drift = np.cumsum(rng.normal(0.002, 0.01, n))
+        close = 100 * np.exp(drift)
+        frame = self._candles([(c, c * 1.01, c * 0.99, c) for c in close])
+        prepared = {"S": frame}
+        dataset = build_pattern_dataset(prepared, horizon=1, benchmark=frame)
+        # Aktie == Benchmark -> marktbereinigte Rendite muss null sein.
+        assert dataset["fwd_abn"].abs().max() < 1e-9
+        assert dataset["fwd"].abs().max() > 0

@@ -346,3 +346,64 @@ Deshalb ist bei hohem Hebel und kurzer Haltedauer der Spread die gesamte Geschic
 ```bash
 python -c "from research.intraday_ko import sweep_holds"   # siehe Modul
 ```
+
+---
+
+# Kerzenmuster einzeln vermessen
+
+Nicht „was macht der Durchschnitt aller Kerzen", sondern: Wenn genau **dieses** Muster
+auftritt — was macht die nächste Kerze dann?
+
+```bash
+python -m research.pattern_cli                 # 25 Muster, marktbereinigt
+python -m research.pattern_cli --horizon 5     # fünf Kerzen vorwärts
+python -m research.pattern_cli --raw           # ohne Marktbereinigung
+```
+
+25 Muster: Doji, Hammer, Shooting Star, Marubozu, Engulfing, Harami, Piercing Line,
+Dark Cloud, Tweezer, Inside/Outside Bar, Morning/Evening Star, Three White Soldiers,
+Three Black Crows, 20-Tage-Ausbrüche, Gaps, Double Top, Double Bottom.
+
+## Zwei Messlatten, die man leicht falsch setzt
+
+**Die Basisrate ist nicht 50 %.** Aktien steigen an 51,84 % aller Tage. Ein Muster mit
+52 % Trefferquote ist der Normalzustand, kein Signal.
+
+**Bärische Muster brauchen Marktbereinigung.** Eine Short-Position verliert in einem
+steigenden Markt schon deshalb, weil der Markt steigt. Ohne Bereinigung sieht jedes
+bärische Muster nach einem starken Befund aus — in die falsche Richtung.
+
+Was das ausmacht, am Beispiel `double_top`:
+
+| | t-Wert |
+|---|---:|
+| roh gerechnet | **−3,38** (sieht signifikant aus) |
+| marktbereinigt | **−1,31** (nichts) |
+
+Der ganze scheinbare Befund war der Aufwärtsdrift des Marktes.
+
+## Ergebnis
+
+**264.870 Kerzen, 95 Aktien, 2015–2026, marktbereinigt.** Basisrate 49,56 %.
+
+Kein einziges der 25 Muster erreicht die bei 25 Tests nötige Schwelle von |t| > 2,8.
+Größter gemessener Wert: **2,12** (`gap_up`). Die Trefferquoten liegen alle zwischen
+48,5 % und 50,9 % — also im Rauschen um die Basisrate.
+
+## Der entscheidende Test
+
+Bestes Muster in der ersten Hälfte suchen, in der zweiten prüfen:
+
+| | 2015–2020 | 2021–2026 |
+|---|---:|---:|
+| `doji` (Bester der 1. Hälfte) | 50,15 %, t=+1,95 | 48,73 %, **t=−0,69** |
+
+Und die Zahl, um die es geht:
+
+> **Korrelation der t-Werte zwischen beiden Hälften: −0,004**
+
+Null. Wie gut ein Muster in sechs Jahren abgeschnitten hat, sagt **nichts** darüber,
+wie es in den nächsten sechs Jahren abschneidet. Genau das müsste anders sein, wenn
+die Muster echt wären.
+
+Höchste Trefferquote irgendwo im ganzen Datensatz: 52,65 %. Nicht 60 %, nicht 70 %.
