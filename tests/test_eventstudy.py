@@ -415,3 +415,65 @@ class TestMachineLearning:
         for fold in result.folds:
             # Getestet wird immer NACH dem Ende des Trainings.
             assert fold["getestet_bis"] > fold["trainiert_bis"]
+
+
+class TestIntradayKnockout:
+    """Kurze Haltedauern: Pfadpruefung und Tagesgrenze."""
+
+    def _bars(self, closes, highs=None, lows=None, day="2024-01-02", start_hour=14):
+        n = len(closes)
+        closes = np.asarray(closes, dtype=float)
+        return pd.DataFrame({
+            "date": pd.date_range(f"{day} {start_hour}:30", periods=n, freq="15min", tz="UTC"),
+            "open": closes,
+            "high": np.asarray(highs if highs is not None else closes, dtype=float),
+            "low": np.asarray(lows if lows is not None else closes, dtype=float),
+            "close": closes,
+            "volume": np.full(n, 1000.0), "adjclose": closes,
+        })
+
+    def test_barrier_touched_within_holding_window(self):
+        from research.intraday_ko import IntradayCosts, simulate_holds
+        # Hebel 30 -> Schwelle 3,33 % -> bei Einstieg 100 liegt sie bei 96,67.
+        bars = self._bars([100, 100, 100, 100],
+                          highs=[100, 100, 100, 100],
+                          lows=[100, 96.0, 100, 100])
+        trades = simulate_holds(bars, leverage=30, hold_bars=2,
+                                costs=IntradayCosts(spread=0.0))
+        assert bool(trades.at[0, "ausgeknockt"]) is True
+        assert trades.at[0, "ergebnis_%"] == pytest.approx(-100.0)
+
+    def test_no_knockout_when_barrier_held(self):
+        from research.intraday_ko import IntradayCosts, simulate_holds
+        bars = self._bars([100, 99, 101], highs=[100, 99.5, 101], lows=[100, 98.0, 100])
+        trades = simulate_holds(bars, leverage=30, hold_bars=2,
+                                costs=IntradayCosts(spread=0.0))
+        assert bool(trades.at[0, "ausgeknockt"]) is False
+        assert trades.at[0, "ergebnis_%"] == pytest.approx(30.0)  # +1 % mal Hebel 30
+
+    def test_trades_never_span_two_sessions(self):
+        """Ein Intraday-Trade darf nicht ueber Nacht laufen -- sonst faellt Finanzierung an."""
+        from research.intraday_ko import simulate_holds
+        day1 = self._bars([100] * 4, day="2024-01-02")
+        day2 = self._bars([100] * 4, day="2024-01-03")
+        bars = pd.concat([day1, day2], ignore_index=True)
+        trades = simulate_holds(bars, leverage=30, hold_bars=3)
+        tage = pd.to_datetime(trades["einstieg"]).dt.date.nunique()
+        # Nur Einstiege, bei denen der Ausstieg am selben Tag liegt.
+        assert len(trades) == 2, "Trades ueber die Tagesgrenze wurden nicht ausgefiltert"
+        assert tage == 2
+
+    def test_spread_is_the_only_intraday_cost(self):
+        from research.intraday_ko import IntradayCosts, simulate_holds
+        flat = self._bars([100] * 4)
+        trades = simulate_holds(flat, leverage=30, hold_bars=2,
+                                costs=IntradayCosts(spread=0.01))
+        # Kurs unveraendert -> genau der Spread bleibt als Verlust, keine Finanzierung.
+        assert trades["ergebnis_%"].iloc[0] == pytest.approx(-1.0)
+
+    def test_short_side_uses_highs(self):
+        from research.intraday_ko import IntradayCosts, simulate_holds
+        bars = self._bars([100, 100, 100], highs=[100, 104.0, 100], lows=[100, 100, 100])
+        trades = simulate_holds(bars, leverage=30, hold_bars=2, side=-1,
+                                costs=IntradayCosts(spread=0.0))
+        assert bool(trades.at[0, "ausgeknockt"]) is True

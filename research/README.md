@@ -267,3 +267,82 @@ Die Muster **sind** in den Trainingsdaten — das Modell findet sie mit 99 % Gen
 Sie setzen sich nur nicht fort. Das ist der Unterschied zwischen einem Muster und einer
 Regelmäßigkeit: Ein Muster in vergangenen Kursen ist so lange da, bis jemand darauf
 handelt.
+
+---
+
+# Knock-outs über Stunden statt Tage
+
+Die Studie oben hält fünf Tage. Das ist nicht der Fall, um den es meistens geht: rein,
+ein paar Stunden halten, vor Handelsschluss raus. Dieses Modul rechnet genau das,
+auf 15-Minuten-Balken, damit der Pfad innerhalb des Tages sichtbar ist.
+
+Zwei Dinge sprechen für die kurze Haltedauer, und beide stimmen:
+
+- **Keine Finanzierung.** Wer vor Schluss glattstellt, zahlt keine Übernachtzinsen —
+  bei Hebel 30 immerhin rund 0,48 % pro Tag.
+- **Kaum Knock-out-Risiko.** Die Wahrscheinlichkeit, eine Schwelle zu berühren, wächst
+  mit der Wurzel der Zeit. Über zwei Stunden ist das ein völlig anderes Risiko als über
+  fünf Tage.
+
+## Das Knock-out-Problem verschwindet tatsächlich
+
+Hebel 30, 30 Aktien, 15-Minuten-Balken:
+
+| Haltedauer | ausgeknockt | *5 Tage zum Vergleich* |
+|---|---:|---:|
+| 30 Minuten | 0,20 % | *69 %* |
+| 1 Stunde | 0,47 % | |
+| 2 Stunden | 1,09 % | |
+| 3,2 Stunden | 1,97 % | |
+
+Von 69 % auf 0,2 %. Das ist keine kleine Verbesserung, das ist die Beseitigung des
+Problems.
+
+## Nur war das Knock-out nie das eigentliche Problem
+
+Bilanz **ohne jede Kosten**:
+
+| Haltedauer | Gewinntrades | Mittelwert |
+|---|---:|---:|
+| 30 Minuten | 49,75 % | **−0,007 %** |
+| 1 Stunde | 49,81 % | −0,024 % |
+| 2 Stunden | 49,82 % | −0,078 % |
+| 3,2 Stunden | 49,74 % | −0,195 % |
+
+Der Erwartungswert ist null. Kein Vorteil, keine Richtung, ein Münzwurf. Das Knock-out
+hat diese Tatsache nur überdeckt.
+
+## Und damit entscheidet allein der Spread
+
+Mittelwert je Trade, nach Kostenannahme:
+
+| Spread | 0,5 h | 1 h | 2 h | 3,2 h |
+|---|---:|---:|---:|---:|
+| 0,0 % | −0,007 | −0,024 | −0,078 | −0,195 |
+| 0,2 % | −0,207 | −0,223 | −0,275 | −0,391 |
+| 0,5 % | −0,506 | −0,521 | −0,572 | −0,685 |
+| 1,0 % | −1,005 | −1,019 | −1,067 | −1,175 |
+
+Der Verlust ist **exakt der Spread**. Nichts anderes passiert bei diesem Trade.
+
+Und weil kurze Haltedauern viele Trades bedeuten, zahlt man ihn oft. Bei 2 Stunden
+Haltedauer und 1 % Spread, vollem Einsatz:
+
+| Trades pro Tag | aus 1.000 € nach einem Jahr |
+|---|---:|
+| 1 | 68,50 € |
+| 2 | 4,69 € |
+| 3 | 0,32 € |
+
+## Warum der Hebel den Spread mitvergrößert
+
+Bei Hebel 30 muss der Kurs nur **+0,033 %** laufen, um 1 % Spread zu decken. Das klingt
+nach nichts. Es ist aber ein Münzwurf, ob er in die richtige Richtung geht — im Mittel
+bleibt der Spread stehen.
+
+Der Hebel vervielfacht eben nicht nur den Gewinn, sondern die Kosten identisch mit.
+Deshalb ist bei hohem Hebel und kurzer Haltedauer der Spread die gesamte Geschichte.
+
+```bash
+python -c "from research.intraday_ko import sweep_holds"   # siehe Modul
+```
