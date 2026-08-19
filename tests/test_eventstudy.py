@@ -850,3 +850,63 @@ class TestFundamentals:
         })
         merged = align_to_prices(fundamentals, prices, horizon_days=20)
         assert (merged["date"] - merged["filed"]).dt.days.max() <= 400
+
+
+class TestRotation:
+    """Aktives Umschichten: Auswahl, Kosten, Kennzahlen."""
+
+    def _prices(self, n_days=800, n_symbols=20, seed=3):
+        rng = np.random.default_rng(seed)
+        idx = pd.bdate_range("2015-01-01", periods=n_days)
+        return pd.DataFrame(
+            {f"S{i}": 100 * np.exp(np.cumsum(rng.normal(0.0004, 0.015, n_days)))
+             for i in range(n_symbols)}, index=idx)
+
+    def test_momentum_uses_only_past(self):
+        from research.rotation import momentum
+        prices = self._prices()
+        voll = momentum(prices)
+        gekuerzt = momentum(prices.iloc[:600])
+        pd.testing.assert_frame_equal(voll.iloc[:600], gekuerzt)
+
+    def test_backtest_picks_highest_signal(self):
+        from research.rotation import RotationConfig, backtest
+        n = 400
+        idx = pd.bdate_range("2015-01-01", periods=n)
+        # S0 steigt, alle anderen fallen. Ein Signal, das S0 bevorzugt, muss gewinnen.
+        prices = pd.DataFrame({"S0": np.linspace(100, 400, n),
+                               "S1": np.linspace(100, 50, n),
+                               "S2": np.linspace(100, 60, n)}, index=idx)
+        signal = pd.DataFrame({"S0": 1.0, "S1": 0.0, "S2": 0.0}, index=idx)
+        kurve = backtest(prices, signal, RotationConfig(n_halten=1, vorlauf=50, kosten_bp=0))
+        assert kurve.iloc[-1] > 1.5
+
+    def test_turnover_costs_reduce_return(self):
+        from research.rotation import RotationConfig, backtest
+        prices = self._prices()
+        rng = np.random.default_rng(1)
+        # Signal wechselt staendig -> maximaler Umschlag -> Kosten muessen beissen.
+        signal = pd.DataFrame(rng.random(prices.shape), index=prices.index, columns=prices.columns)
+        ohne = backtest(prices, signal, RotationConfig(kosten_bp=0, n_halten=5))
+        mit = backtest(prices, signal, RotationConfig(kosten_bp=100, n_halten=5))
+        assert mit.iloc[-1] < ohne.iloc[-1]
+
+    def test_sharpe_annualisation_follows_rebalance_period(self):
+        """Ein fester Faktor blaeht den Sharpe bei seltenem Umschichten auf."""
+        from research.rotation import kennzahlen
+        rng = np.random.default_rng(2)
+        kurve = pd.Series(np.cumprod(1 + rng.normal(0.01, 0.04, 200)),
+                          index=pd.date_range("2015-01-01", periods=200, freq="ME"))
+        monatlich = kennzahlen(kurve, rebalance_tage=21)["sharpe"]
+        jaehrlich = kennzahlen(kurve, rebalance_tage=252)["sharpe"]
+        assert monatlich > jaehrlich
+        assert jaehrlich == pytest.approx(monatlich / np.sqrt(12), rel=0.01)
+
+    def test_random_control_has_same_shape_as_strategy(self):
+        from research.rotation import RotationConfig, backtest, momentum, random_control
+        prices = self._prices()
+        config = RotationConfig(n_halten=5, vorlauf=252)
+        strategie = backtest(prices, momentum(prices), config)
+        kontrolle = random_control(prices, config)
+        # Gleiche Stichtage -> die Differenz ist auf das Signal zurueckzufuehren.
+        assert list(strategie.index) == list(kontrolle.index)

@@ -48,6 +48,11 @@ python -m research.pattern_cli  # 25 bekannte Kerzenmuster einzeln vermessen
 python -m research.discovery_cli  # Muster selbst finden statt aus dem Lehrbuch
 ```
 
+Das beste Ergebnis des Projekts steht in `research/rotation.py`: Momentum-Rotation,
+15 Aktien, monatlich umgeschichtet — **+3,8 Prozentpunkte pro Jahr gegenüber einer
+Zufallsauswahl im selben Universum** über 27 Jahre, bei −49 % Drawdown. Stark
+zeitabhängig, Details in [research/README.md](research/README.md).
+
 Dazu `research/fundamentals.py`: Bilanzdaten von SEC EDGAR, punktgenau ab dem
 Einreichungsdatum — testet, ob es etwas bringt, die fundamental stärksten Firmen
 auszuwählen.

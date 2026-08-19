@@ -742,3 +742,60 @@ Die naheliegendste Auswahlmethode überhaupt — Quartalszahlen lesen, die stär
 Firmen kaufen — liefert in diesem Test eine Unterperformance, keine Überperformance.
 Es ist das einzige statistisch klare Ergebnis dieses Repos, und es zeigt gegen die
 Intuition.
+
+---
+
+# Aktiv umschichten: das erste Ergebnis, das seine Kontrolle schlägt
+
+Die Faktorstudie oben hält Positionen und misst marktneutral. Das ist die akademische
+Form der Frage und unterschlägt zwei Dinge, die praktisch zählen: **Man muss nicht ewig
+halten, und man muss nicht gleichzeitig short gehen.**
+
+`research/rotation.py` rotiert stattdessen: alle vier Wochen die 15 Aktien mit dem
+stärksten Momentum kaufen, den Rest verkaufen. Long only, konzentriert, mit
+Umschichtkosten von 20 bp.
+
+## Der Maßstab ist nicht der Index
+
+Ein Universum aus heutigen Firmen schlägt den Index schon von allein — ganz ohne
+Strategie, nur durch Survivorship Bias. Der einzig faire Vergleich ist deshalb eine
+**Zufallsauswahl aus demselben Universum**: gleiche Anzahl, gleiche Umschichtfrequenz,
+gleiche Kosten, gleiche Verzerrung — nur ohne Signal.
+
+## Ergebnis
+
+159 Aktien, 15 gehalten, monatlich umgeschichtet:
+
+| Zeitraum | Momentum | Zufallsauswahl | **Vorsprung** | Drawdown |
+|---|---:|---:|---:|---:|
+| 1999–2009 | +7,19 % | +6,25 % | **+0,94 pp** | −50,2 % |
+| 2010–2026 | +24,03 % | +17,36 % | **+6,67 pp** | −16,8 % |
+| **ganzer Zeitraum** | **+17,23 %** | **+13,43 %** | **+3,80 pp** | −49,0 % |
+
+Zum Vergleich: Index (SPY) +14,18 %, Universum gleichgewichtet halten +15,59 %.
+
+**Das ist das erste Ergebnis in diesem Repo, das seine eigene Kontrolle deutlich
+schlägt** — +3,80 Prozentpunkte pro Jahr über 27 Jahre, gegen eine Zufallsauswahl mit
+identischer Verzerrung.
+
+## Die Einschränkungen, die dazugehören
+
+**Es ist stark zeitabhängig.** Fast der ganze Vorsprung stammt aus 2010–2026 (+6,67 pp).
+In 1999–2009 waren es +0,94 pp — praktisch nichts — bei einem Drawdown von −50 %.
+
+**Survivorship Bias trifft Momentum stärker als die Kontrolle.** Momentum kauft, was
+gestiegen ist. Aktien, die stark stiegen und danach auf null gingen, fehlen im
+Universum. Die Zufallskontrolle wird davon weniger begünstigt als die Strategie.
+
+**Der Drawdown ist real.** −49 % über den ganzen Zeitraum. Wer 2008 dabei war, hat die
+Hälfte verloren und musste durchhalten.
+
+## Einordnung
+
+Das ist keine Tageshandelsstrategie und kein Hebelprodukt. Es ist: 15 Aktien halten,
+einmal im Monat umschichten, das über Jahrzehnte durchziehen und in schlechten Phasen
+die Hälfte des Kapitals aushalten.
+
+Realistische Erwartung nach allen Abzügen liegt eher bei den +3,8 Prozentpunkten des
+Gesamtzeitraums als bei den +6,7 des guten Jahrzehnts — und Steuern sind darin noch
+nicht enthalten.
