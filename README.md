@@ -43,6 +43,7 @@ darunter fast die Hälfte derer, deren Richtung am Ende richtig war.
 ```bash
 python -m research.cli      # Ereignisse: was passiert nach Nachrichten
 python -m research.tf_cli   # Multi-Timeframe: bringt Einigkeit der Zeitebenen etwas
+python -m research.ml_cli   # Mustererkennung: lernt ein Modell die Zukunft?
 ```
 
 Der wichtigere Teil ist aber nicht das Ergebnis, sondern das Werkzeug: eine

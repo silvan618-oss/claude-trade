@@ -192,3 +192,78 @@ gemessene Effekt liegt eine Größenordnung darunter.
   vertretbar, für lange Zeiträume nicht.
 - Getestet ist der EMA-Crossover als Trenddefinition. Andere Definitionen (Struktur,
   Ranges, Volumenprofil) sind damit nicht widerlegt — nur diese eine.
+
+---
+
+# Mustererkennung: aus der Vergangenheit die Zukunft prognostizieren
+
+Genau die Kernidee. Ein Modell bekommt 33 Merkmale, die am Tag t bekannt sind, und
+soll den Tag t+1 vorhersagen.
+
+```bash
+python -m research.ml_cli                 # Gradient Boosting
+python -m research.ml_cli --model rf      # Random Forest
+python -m research.ml_cli --shuffle       # Kontrollprobe: Ziel durchgewürfelt
+```
+
+## Zwei Regeln, ohne die es eine Selbsttäuschung wird
+
+**Jedes Merkmal muss am Tag t berechenbar sein.** Ein einziges, das heimlich nach vorn
+schaut, erzeugt Trefferquoten von 90 %, die live nicht existieren. Ein Test prüft das
+hart: Löscht man alle Daten nach Tag t, dürfen sich die Merkmale bei t nicht ändern.
+
+**Getestet wird nur auf Zeiträumen nach dem Training.** Walk-Forward mit wachsendem
+Trainingsfenster und wanderndem Testfenster.
+
+## Ergebnis
+
+**264.967 Zeilen, 33 Merkmale, 95 Aktien, 2015–2026.**
+Basisrate: 51,82 % aller Tage steigen — so gut ist „immer aufwärts tippen".
+
+| Modell | im Training | ungesehen | Lücke |
+|---|---:|---:|---:|
+| Gradient Boosting | 69,98 % | 51,21 % | 18,77 Pp |
+| Random Forest | **99,18 %** | **51,05 %** | **48,13 Pp** |
+| Logistische Regression | 52,99 % | 51,17 % | 1,82 Pp |
+
+Der Random Forest lernt die Vergangenheit **zu 99,18 %** auswendig und liegt auf
+ungesehenen Daten bei 51,05 % — **unter** der Basisrate. Er ist schlechter, als immer
+„aufwärts" zu tippen.
+
+### Die Kontrollprobe, die alles erklärt
+
+Dasselbe Modell, aber die Zielwerte vorher zufällig durchgewürfelt. Es gibt dann
+buchstäblich **nichts** zu lernen:
+
+| | im Training | ungesehen |
+|---|---:|---:|
+| Zufallsziel | **99,99 %** | 50,76 % |
+
+99,99 % Trefferquote auf reinem Rauschen. Damit ist bewiesen: Die hohe Zahl im Training
+ist kein entdecktes Muster, sondern Auswendiglernen. Jeder Backtest, der nur diese Zahl
+zeigt, sagt nichts aus.
+
+### Und beim Handeln
+
+Täglich das zuversichtlichste Zehntel kaufen, 10 bp Kosten:
+
+| Modell | Treffer | Mittel | Sharpe | Kapital |
+|---|---:|---:|---:|---:|
+| Gradient Boosting | 52,12 % | −1,03 bp | −0,08 | ×0,696 |
+| Random Forest | 52,05 % | +0,67 bp | +0,10 | ×0,967 |
+| Logistische Regression | 52,33 % | −0,55 bp | −0,04 | ×0,717 |
+| **Zufallsziel** | 52,36 % | −1,05 bp | −0,25 | ×0,798 |
+
+Das auf Rauschen trainierte Modell hat die **höchste Trefferquote** von allen.
+
+Ohne Kosten sehen alle gut aus (+9 bis +11 bp, Kapital ×3,9 bis ×5,4) — aber das
+Zufallsmodell erreicht dort **Sharpe +2,06** und schlägt damit jedes echte Modell.
+Der Gewinn kommt nicht aus der Prognose, sondern daraus, dass irgendein Zehntel des
+Marktes zu halten die allgemeine Aufwärtsdrift einsammelt. Die Modelle tragen nichts bei.
+
+## Was das heißt
+
+Die Muster **sind** in den Trainingsdaten — das Modell findet sie mit 99 % Genauigkeit.
+Sie setzen sich nur nicht fort. Das ist der Unterschied zwischen einem Muster und einer
+Regelmäßigkeit: Ein Muster in vergangenen Kursen ist so lange da, bis jemand darauf
+handelt.

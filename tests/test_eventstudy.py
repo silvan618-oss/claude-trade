@@ -336,3 +336,82 @@ class TestTimeframes:
         # Die beiden richtungslosen Balken duerfen nicht als Treffer zaehlen.
         assert 0 not in result["einigkeit"].tolist()
         assert result.loc[result["einigkeit"] == 2, "n"].iloc[0] == 4
+
+
+class TestMachineLearning:
+    """Die Merkmale duerfen ausschliesslich Vergangenheit enthalten."""
+
+    def _series(self, n=400, seed=5):
+        rng = np.random.default_rng(seed)
+        close = 100 * np.exp(np.cumsum(rng.normal(0, 0.015, n)))
+        return pd.DataFrame({
+            "date": pd.bdate_range("2020-01-01", periods=n),
+            "open": close * (1 + rng.normal(0, 0.002, n)),
+            "high": close * (1 + abs(rng.normal(0, 0.008, n))),
+            "low": close * (1 - abs(rng.normal(0, 0.008, n))),
+            "close": close,
+            "volume": rng.integers(1_000_000, 5_000_000, n).astype(float),
+            "adjclose": close,
+        })
+
+    def test_no_feature_sees_the_future(self):
+        """Kernprobe: Daten nach Tag t loeschen darf die Merkmale bei t nicht aendern."""
+        from research.events import prepare
+        from research.ml import build_features, feature_columns
+
+        full = prepare(self._series())
+        cut = 300
+        truncated = prepare(self._series().iloc[: cut + 1].copy())
+
+        a = build_features(full, "T").iloc[:cut]
+        b = build_features(truncated, "T").iloc[:cut]
+
+        for column in feature_columns(a):
+            if column not in b.columns:
+                continue
+            left, right = a[column], b[column]
+            both = left.notna() & right.notna()
+            assert np.allclose(left[both], right[both], equal_nan=True), \
+                f"Merkmal {column!r} aendert sich, wenn spaetere Daten fehlen -> Zukunftswissen"
+
+    def test_target_is_next_day_return(self):
+        from research.events import prepare
+        from research.ml import build_features
+
+        frame = prepare(self._series(n=50))
+        features = build_features(frame, "T")
+        expected = frame.at[11, "close"] / frame.at[10, "close"] - 1.0
+        assert features.at[10, "ziel_rendite"] == pytest.approx(expected)
+        assert features.at[10, "ziel_hoch"] == int(expected > 0)
+
+    def test_last_row_target_is_undefined(self):
+        """Fuer den letzten Tag gibt es kein Morgen -- das Ziel muss leer sein."""
+        from research.events import prepare
+        from research.ml import build_features
+        features = build_features(prepare(self._series(n=50)), "T")
+        assert pd.isna(features["ziel_rendite"].iloc[-1])
+
+    def test_cross_sectional_rank_uses_same_day_only(self):
+        from research.ml import build_dataset
+        from research.events import prepare
+        prepared = {f"S{i}": prepare(self._series(seed=i)) for i in range(4)}
+        data = build_dataset(prepared)
+        day = data[data["date"] == data["date"].iloc[-40]].dropna(subset=["rang_ret_20"])
+        if len(day) > 1:
+            # Raenge innerhalb eines Tages muessen zwischen 0 und 1 liegen und verschieden sein.
+            assert day["rang_ret_20"].between(0, 1).all()
+            assert day["rang_ret_20"].nunique() == len(day)
+
+    def test_walk_forward_never_tests_on_training_dates(self):
+        from research.ml import build_dataset, walk_forward
+        from research.events import prepare
+        from sklearn.dummy import DummyClassifier
+
+        prepared = {f"S{i}": prepare(self._series(n=2000, seed=i)) for i in range(6)}
+        data = build_dataset(prepared)
+        result = walk_forward(data, lambda: DummyClassifier(strategy="most_frequent"),
+                              train_years=2, test_months=12, verbose=False)
+        assert result.folds, "kein einziger Durchlauf zustande gekommen"
+        for fold in result.folds:
+            # Getestet wird immer NACH dem Ende des Trainings.
+            assert fold["getestet_bis"] > fold["trainiert_bis"]
