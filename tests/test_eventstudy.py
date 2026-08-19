@@ -752,3 +752,101 @@ class TestFactors:
         assert stats["max_drawdown_%"] == pytest.approx(-50.0, abs=0.5)
         assert stats["gewinn_perioden_%"] == pytest.approx(87.5)
         assert stats["n_perioden"] == 8
+
+
+class TestFundamentals:
+    """SEC-Kennzahlen: Periodenlaengen, Bezeichnerwahl, Veroeffentlichungsdatum."""
+
+    def _facts(self, entries, concept="Revenues"):
+        return {"facts": {"us-gaap": {concept: {"units": {"USD": entries}}}}}
+
+    def test_annual_figures_excluded_from_quarterly_series(self):
+        """10-K-Jahreswerte duerfen nicht in die Quartalsreihe -- sonst zaehlt man doppelt."""
+        from research.fundamentals import _extract
+        entries = [
+            {"start": "2023-01-01", "end": "2023-03-31", "filed": "2023-05-01",
+             "val": 100, "form": "10-Q"},
+            {"start": "2023-01-01", "end": "2023-12-31", "filed": "2024-02-01",
+             "val": 420, "form": "10-K"},   # Jahreswert, muss raus
+        ]
+        out = _extract(self._facts(entries), ["Revenues"], quarterly_only=True)
+        assert len(out) == 1
+        assert out["val"].iloc[0] == 100
+
+    def test_balance_items_keep_all_periods(self):
+        """Bestandsgroessen haben keine Periodenlaenge und duerfen nicht gefiltert werden."""
+        from research.fundamentals import _extract
+        entries = [
+            {"end": "2023-03-31", "filed": "2023-05-01", "val": 500, "form": "10-Q"},
+            {"end": "2023-12-31", "filed": "2024-02-01", "val": 550, "form": "10-K"},
+        ]
+        out = _extract(self._facts(entries, "Assets"), ["Assets"], quarterly_only=False)
+        assert len(out) == 2
+
+    def test_richest_concept_wins(self):
+        """Fuehrt eine Firma zwei Bezeichner, gewinnt der mit mehr Daten."""
+        from research.fundamentals import _extract
+        sparse = [{"start": "2023-01-01", "end": "2023-03-31", "filed": "2023-05-01",
+                   "val": 1, "form": "10-Q"}]
+        rich = [{"start": f"20{y}-01-01", "end": f"20{y}-03-31",
+                 "filed": f"20{y}-05-01", "val": 10 + y, "form": "10-Q"}
+                for y in range(15, 25)]
+        facts = {"facts": {"us-gaap": {
+            "RevenueFromContractWithCustomerExcludingAssessedTax":
+                {"units": {"USD": sparse}},
+            "Revenues": {"units": {"USD": rich}},
+        }}}
+        out = _extract(facts, ["RevenueFromContractWithCustomerExcludingAssessedTax",
+                               "Revenues"], quarterly_only=True)
+        assert len(out) == len(rich)
+
+    def test_first_filing_wins_over_restatement(self):
+        """Spaetere Korrekturen waren damals nicht bekannt -- die erste Fassung zaehlt."""
+        from research.fundamentals import _extract
+        entries = [
+            {"start": "2023-01-01", "end": "2023-03-31", "filed": "2023-05-01",
+             "val": 100, "form": "10-Q"},
+            {"start": "2023-01-01", "end": "2023-03-31", "filed": "2024-05-01",
+             "val": 90, "form": "10-Q"},   # nachtraegliche Korrektur
+        ]
+        out = _extract(self._facts(entries), ["Revenues"], quarterly_only=True)
+        assert out["val"].iloc[0] == 100
+
+    def test_alignment_never_uses_unpublished_numbers(self):
+        """Kernprobe: Kennzahlen duerfen erst ab ihrem Einreichungsdatum gelten."""
+        from research.fundamentals import align_to_prices, KENNZAHLEN
+        dates = pd.bdate_range("2023-01-02", periods=200)
+        prices = {"T": pd.DataFrame({
+            "date": dates, "close": np.linspace(100, 120, 200),
+            "open": np.linspace(100, 120, 200), "high": np.linspace(101, 121, 200),
+            "low": np.linspace(99, 119, 200), "volume": np.full(200, 1e6),
+            "adjclose": np.linspace(100, 120, 200),
+        })}
+        fundamentals = pd.DataFrame({
+            "symbol": ["T"], "end": [pd.Timestamp("2023-03-31")],
+            "filed": [pd.Timestamp("2023-05-15")],
+            **{k: [0.25] for k in KENNZAHLEN},
+        })
+        merged = align_to_prices(fundamentals, prices, horizon_days=20)
+        vorher = merged[merged["date"] < pd.Timestamp("2023-05-15")]
+        nachher = merged[merged["date"] >= pd.Timestamp("2023-05-15")]
+        assert vorher["marge"].isna().all(), "Zahl war vor der Einreichung sichtbar"
+        assert nachher["marge"].notna().any()
+
+    def test_stale_fundamentals_dropped(self):
+        """Aelter als gut ein Jahr -> nicht mehr verwendbar."""
+        from research.fundamentals import align_to_prices, KENNZAHLEN
+        dates = pd.bdate_range("2023-01-02", periods=700)
+        prices = {"T": pd.DataFrame({
+            "date": dates, "close": np.linspace(100, 200, 700),
+            "open": np.linspace(100, 200, 700), "high": np.linspace(101, 201, 700),
+            "low": np.linspace(99, 199, 700), "volume": np.full(700, 1e6),
+            "adjclose": np.linspace(100, 200, 700),
+        })}
+        fundamentals = pd.DataFrame({
+            "symbol": ["T"], "end": [pd.Timestamp("2023-01-31")],
+            "filed": [pd.Timestamp("2023-02-15")],
+            **{k: [0.25] for k in KENNZAHLEN},
+        })
+        merged = align_to_prices(fundamentals, prices, horizon_days=20)
+        assert (merged["date"] - merged["filed"]).dt.days.max() <= 400

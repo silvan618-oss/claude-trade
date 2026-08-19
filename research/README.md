@@ -682,3 +682,63 @@ widerlegen.** Nicht wegen mangelnder Mühe, sondern weil die Datenquelle struktu
 ungeeignet ist. Genau dafür existieren survivorship-freie Point-in-Time-Datenbanken
 (CRSP, Compustat) — und genau deshalb wird akademische Finanzforschung mit ihnen
 gemacht und nicht mit Gratisdaten.
+
+---
+
+# Fundamentaldaten: bringt es etwas, die guten Firmen auszuwählen?
+
+Alle Studien oben benutzen ausschließlich Kurse. Das ist eine echte Lücke — niemand
+wählt Aktien nach Kerzenformen aus. Man schaut auf Umsatz, Gewinn, Marge,
+Eigenkapitalrendite: **wie das Unternehmen aufgestellt ist.**
+
+Quelle ist SEC EDGAR, kostenlos und offiziell. Entscheidend ist das Feld `filed` — das
+Datum, an dem eine Zahl eingereicht und damit öffentlich wurde. Der Quartalsgewinn zum
+31.03. ist nicht am 31.03. bekannt, sondern erst vier bis sechs Wochen später. Wer das
+Quartalsende statt des Einreichungsdatums benutzt, handelt mit Wissen aus der Zukunft.
+
+## Ergebnis: die starken Firmen schneiden schlechter ab
+
+159 Firmen, 8.335 Beobachtungen, 63 Quartale, 12 Monate Haltedauer, marktbereinigt.
+Bestes Fünftel gegen schlechtestes:
+
+| Kennzahl | oberes Fünftel | unteres Fünftel | Differenz | t |
+|---|---:|---:|---:|---:|
+| Eigenkapitalquote | +6,39 % | +2,81 % | +3,49 % | +1,81 |
+| Umsatzwachstum | +6,60 % | +5,34 % | +1,71 % | +0,71 |
+| Kapitalrendite | +3,83 % | +8,22 % | −4,04 % | −1,91 |
+| Eigenkapitalrendite | +4,72 % | +8,75 % | −3,80 % | −2,52 |
+| **Marge** | +1,26 % | **+10,87 %** | **−10,20 %** | **−4,19** |
+| **Gewinnwachstum** | +0,73 % | **+8,08 %** | **−7,71 %** | **−4,43** |
+
+Bei 6 gleichzeitigen Tests wäre |t| > 2,6 belastbar. **Zwei Kennzahlen überschreiten
+das deutlich — beide mit negativem Vorzeichen.**
+
+Die Firmen mit den höchsten Margen und dem stärksten Gewinnwachstum liefern über die
+folgenden zwölf Monate **7 bis 10 Prozentpunkte weniger** als die schwächsten. Und
+das Vorzeichen hält in beiden Teilzeiträumen (2010–2017 und 2018–2026) bei allen sechs
+Kennzahlen.
+
+## Zwei Erklärungen, und beide zählen
+
+**Die Zahlen sind längst im Kurs.** Wenn Apple 27 % Marge meldet, ist das binnen Minuten
+öffentlich und eingepreist. Die besten Firmen auszuwählen heißt, das zu kaufen, was
+alle bereits als gut erkannt haben — zu dem Preis, den alle dafür hochgeboten haben.
+Die Information ist kein Vorteil; sie steckt schon im Preis. Das ist die bekannte
+Value-Prämie beziehungsweise die Kehrseite davon, und die Richtung passt zur Literatur.
+
+**Aber Survivorship Bias zeigt in dieselbe Richtung.** Das Universum besteht aus Firmen,
+die es heute noch gibt. Eine Firma mit miserabler Marge 2012, die bis 2026 überlebt hat,
+muss sich erholt haben — die Erholungsfälle sind drin, die Pleiten fehlen. Genau das
+lässt das untere Fünftel künstlich gut aussehen.
+
+**Beides lässt sich mit diesen Daten nicht sauber trennen.** Der Befund ist also nicht,
+dass „schlechte Firmen kaufen" funktioniert. Der Befund ist, dass **„gute Firmen
+auswählen" nachweislich nicht funktioniert** — und das ist die Richtung, auf die es
+hier ankommt.
+
+## Was das für die Auswahl bedeutet
+
+Die naheliegendste Auswahlmethode überhaupt — Quartalszahlen lesen, die stärksten
+Firmen kaufen — liefert in diesem Test eine Unterperformance, keine Überperformance.
+Es ist das einzige statistisch klare Ergebnis dieses Repos, und es zeigt gegen die
+Intuition.

@@ -48,6 +48,10 @@ python -m research.pattern_cli  # 25 bekannte Kerzenmuster einzeln vermessen
 python -m research.discovery_cli  # Muster selbst finden statt aus dem Lehrbuch
 ```
 
+Dazu `research/fundamentals.py`: Bilanzdaten von SEC EDGAR, punktgenau ab dem
+Einreichungsdatum — testet, ob es etwas bringt, die fundamental stärksten Firmen
+auszuwählen.
+
 Momentum im Querschnitt (`research/factors.py`) sah zunächst tragfähig aus (+6,9 %/Jahr
 auf 95 Aktien ab 2010), **repliziert aber nicht** auf 159 Aktien ab 2000 (−0,21 %/Jahr).
 Der Test ist allerdings durch Survivorship Bias gegen Momentum verzerrt — mit Gratisdaten
