@@ -473,3 +473,88 @@ das echte. Damit ist jeder scheinbare Gewinn durch Selektivität als Zufall ausg
 echtem Signal ein und verlangt, dass die Trefferquote bei engerer Auswahl **steigt**.
 Der Test besteht. Das Messwerkzeug funktioniert also — die flache Kurve auf echten
 Daten ist ein Ergebnis, kein kaputtes Messgerät.
+
+---
+
+# Muster selbst finden
+
+Bekannte Formationen sind bekannt — und damit sehr wahrscheinlich wegarbitriert. Dieses
+Modul nimmt kein Lehrbuch, sondern sucht selbst.
+
+```bash
+python -m research.discovery_cli                       # Formmuster, 5 Balken
+python -m research.discovery_cli --kind candle --window 4
+python -m research.discovery_cli --shuffle             # Kontrolllauf ohne Signal
+```
+
+## Wie gesucht wird
+
+Jedes Kursfenster wird in ein **Symbolwort** übersetzt. Zwei Kodierungen:
+
+**Formmuster.** Das Fenster wird z-normiert, damit nur die *Form* zählt und nicht das
+Kursniveau — ein Anstieg von 10 auf 11 € ergibt dasselbe Wort wie einer von 100 auf
+110 €. Dann wird jeder Punkt einer von 3–5 Klassen zugeordnet: `ddbba`, `abadd`, …
+
+**Kerzenmuster.** Jede Kerze wird nach Richtung und Körpergröße kodiert (`H` große
+grüne, `h` kleine grüne, `o` Doji, `l` kleine rote, `L` große rote), dann verkettet:
+`hlHo`, `Loll`, …
+
+Anschließend wird jedes vorkommende Wort einzeln vermessen — marktbereinigt und mit
+nach Datum geclusterten t-Werten.
+
+## Der Filter ist das Eigentliche
+
+Wer 1.400 Muster testet, findet garantiert Dutzende mit traumhaften Werten. Drei Stufen
+dagegen:
+
+1. **FDR-Korrektur** (Benjamini-Hochberg) über alle gleichzeitig getesteten Muster
+2. **Strikte Trennung**: gesucht wird nur bis 2020, geprüft ausschließlich ab 2021
+3. **Kontrolllauf** mit durchgewürfelten Zielwerten
+
+## Ergebnis
+
+**1.410 selbst gefundene Muster**, keins aus einem Lehrbuch:
+
+| Variante | getestet | nominell signifikant | **nach FDR** | out-of-sample gehalten |
+|---|---:|---:|---:|---:|
+| Form, 5 Balken, 4 Klassen | 322 | 21 | **0** | 36 % |
+| Form, 7 Balken, 4 Klassen | 199 | 13 | **0** | 32 % |
+| Form, 6 Balken, 3 Klassen | 271 | 15 | **0** | 52 % |
+| Kerzen, 4 Balken | 615 | 31 | **0** | 48 % |
+
+80 Muster sehen nominell signifikant aus. Nach Korrektur für die Menge der Tests bleibt
+in **jeder** Variante exakt **null** übrig. Out-of-sample halten sie ihr Vorzeichen in
+32–52 % der Fälle — Zufall wäre 50 %.
+
+### Der Kontrolllauf entscheidet
+
+Dieselbe Suche auf **durchgewürfelten** Zielwerten, wo es nichts zu finden gibt:
+
+| | echte Daten | reines Rauschen |
+|---|---:|---:|
+| Muster getestet | 322 | 322 |
+| nominell signifikant | 21 | **19** |
+| bester t-Wert | 3,29 | **3,21** |
+
+Praktisch identisch. Die Zahl der „Entdeckungen" auf echten Marktdaten ist nicht von
+der auf Zufallsdaten zu unterscheiden.
+
+### Ein Beispiel, das alles zeigt
+
+Das Muster `babbcc` im Trainingszeitraum: **57,61 % Trefferquote**, +39,06 bp, t = 3,02.
+Das ist die Größenordnung, nach der man sucht.
+
+Im Haltezeitraum: 53,81 %, +7,19 bp, **t = 0,59**.
+
+Und `ddbba`: Training 53,57 % und t = 3,14 — Holdout 47,20 % und t = −0,99. Vorzeichen
+gedreht.
+
+## Was das bedeutet
+
+Der Einwand „bekannte Muster sind arbitriert, also nimm unbekannte" trifft ein echtes
+Problem, aber die Lösung greift nicht. Ein unbekanntes Muster, das man durch Absuchen
+von 1.400 Kandidaten gefunden hat, ist nicht eher echt — es ist ein Lottogewinner. Man
+hat nicht das beste Muster gefunden, sondern das glücklichste.
+
+Genau dagegen ist der Kontrolllauf gebaut: Er zeigt, wie viele Lottogewinner die Suche
+allein durch ihre eigene Größe produziert.

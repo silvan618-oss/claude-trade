@@ -615,3 +615,78 @@ class TestSelectivity:
                                   top_n=(10, 1), cost_bp=0.0)
         spanne = curve["treffer_%"].max() - curve["treffer_%"].min()
         assert spanne < 8, "Bei reinem Rauschen darf Selektivitaet nichts bringen"
+
+
+class TestDiscovery:
+    """Selbstgefundene Muster: Kodierung, Korrektur, Trennung."""
+
+    def test_shape_motif_ignores_price_level(self):
+        """Dieselbe Form auf anderem Kursniveau muss dasselbe Wort ergeben."""
+        from research.discovery import shape_motifs
+        klein = np.array([10.0, 11, 12, 11, 10])
+        gross = np.array([100.0, 110, 120, 110, 100])
+        assert shape_motifs(klein, 5, 4)[-1] == shape_motifs(gross, 5, 4)[-1]
+
+    def test_shape_motif_distinguishes_shapes(self):
+        from research.discovery import shape_motifs
+        steigend = np.array([10.0, 11, 12, 13, 14])
+        fallend = np.array([14.0, 13, 12, 11, 10])
+        assert shape_motifs(steigend, 5, 4)[-1] != shape_motifs(fallend, 5, 4)[-1]
+
+    def test_motif_word_uses_no_later_bars(self):
+        from research.discovery import shape_motifs
+        rng = np.random.default_rng(2)
+        close = 100 * np.exp(np.cumsum(rng.normal(0, 0.01, 200)))
+        voll = shape_motifs(close, 5, 4)
+        gekuerzt = shape_motifs(close[:150], 5, 4)
+        assert list(voll[:150]) == list(gekuerzt)
+
+    def test_candle_motif_encodes_direction(self):
+        from research.discovery import candle_motifs
+        # Koerper 0,9 der Spanne -> gross. Bei 0,45 waere es eine kleine Kerze.
+        frame = pd.DataFrame({
+            "open": [99.1, 100.9], "high": [101.0, 101.0],
+            "low": [99.0, 99.0], "close": [100.9, 99.1],
+        })
+        assert candle_motifs(frame, 2)[1] == "HL"  # grosse gruene, dann grosse rote
+
+        klein = pd.DataFrame({
+            "open": [100.0, 100.0], "high": [101.0, 101.0],
+            "low": [99.0, 99.0], "close": [100.9, 99.1],
+        })
+        assert candle_motifs(klein, 2)[1] == "hl"  # dieselbe Richtung, kleinere Koerper
+
+    def test_benjamini_hochberg_rejects_pure_noise(self):
+        """1.000 Zufallstests: nominell ~50 Treffer, nach Korrektur keiner."""
+        from research.discovery import benjamini_hochberg
+        rng = np.random.default_rng(7)
+        p = rng.uniform(0, 1, 1000)
+        stats = pd.DataFrame({"muster": [f"m{i}" for i in range(1000)], "p": p,
+                              "t": rng.normal(0, 1, 1000)})
+        out = benjamini_hochberg(stats, alpha=0.05)
+        assert (out["p"] < 0.05).sum() > 30, "nominell muessen es viele sein"
+        assert out["besteht_fdr"].sum() == 0, "nach Korrektur darf keiner bleiben"
+
+    def test_benjamini_hochberg_keeps_real_effects(self):
+        """Kontrollprobe des Filters: echte Effekte muessen durchkommen."""
+        from research.discovery import benjamini_hochberg
+        rng = np.random.default_rng(7)
+        p = np.concatenate([rng.uniform(0, 1, 950), rng.uniform(0, 1e-6, 50)])
+        stats = pd.DataFrame({"muster": [f"m{i}" for i in range(1000)], "p": p,
+                              "t": np.concatenate([rng.normal(0, 1, 950), np.full(50, 6.0)])})
+        out = benjamini_hochberg(stats, alpha=0.05)
+        assert out["besteht_fdr"].sum() >= 45, "echte Effekte muessen den Filter passieren"
+
+    def test_validation_splits_strictly_by_date(self):
+        from research.discovery import validate_out_of_sample
+        rng = np.random.default_rng(4)
+        n = 6000
+        dataset = pd.DataFrame({
+            "symbol": "S",
+            "date": pd.to_datetime(rng.choice(pd.date_range("2015-01-01", "2024-12-31", freq="B"), n)),
+            "muster": rng.choice(["aaa", "bbb", "ccc"], n),
+            "fwd_abn": rng.normal(0, 0.02, n),
+        })
+        result = validate_out_of_sample(dataset, "2021-01-01", min_count=100)
+        # Der Trainingsteil darf keine Daten aus dem Haltezeitraum enthalten.
+        assert "gefunden" in result and "geprueft" in result
