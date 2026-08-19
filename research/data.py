@@ -18,6 +18,17 @@ CACHE_DIR = Path(__file__).resolve().parent.parent / "data_cache"
 CHART_URL = "https://query1.finance.yahoo.com/v8/finance/chart/{symbol}"
 BENCHMARK = "SPY"
 
+# Wie weit Yahoo pro Aufloesung zurueckreicht. Das ist eine harte Grenze der
+# Datenquelle, keine Einstellung: Intraday-Historie gibt es schlicht nicht laenger.
+INTERVALS = {
+    "1m": "7d",      # ~8 Handelstage
+    "5m": "60d",     # ~88 Kalendertage
+    "15m": "60d",    # ~88 Kalendertage
+    "30m": "60d",
+    "1h": "730d",    # ~3 Jahre
+    "1d": "10y",     # volle Historie
+}
+
 # Liquide US-Werte quer ueber die Sektoren. WICHTIG: Das ist die Zusammensetzung
 # von heute, nicht von damals. Firmen, die in der Zwischenzeit pleitegegangen
 # oder uebernommen worden sind, fehlen -- klassischer Survivorship Bias. Fuer die
@@ -46,8 +57,10 @@ class DataError(RuntimeError):
     pass
 
 
-def _cache_path(symbol: str) -> Path:
-    return CACHE_DIR / f"{symbol.upper()}.csv"
+def _cache_path(symbol: str, interval: str = "1d") -> Path:
+    if interval == "1d":
+        return CACHE_DIR / f"{symbol.upper()}.csv"
+    return CACHE_DIR / interval / f"{symbol.upper()}.csv"
 
 
 def _fetch_yahoo(symbol: str, start: dt.date, end: dt.date,
@@ -122,6 +135,102 @@ def load_prices(symbol: str, start: dt.date, end: dt.date, *,
     CACHE_DIR.mkdir(parents=True, exist_ok=True)
     frame.to_csv(path, index=False)
     return frame
+
+
+def load_intraday(symbol: str, interval: str, *,
+                  session: requests.Session | None = None,
+                  refresh: bool = False,
+                  max_age_minutes: int = 30) -> pd.DataFrame:
+    """Feinere Aufloesungen als Tagesdaten.
+
+    Anders als bei Tagesdaten wird hier ueber ``range`` geladen, nicht ueber
+    einen Zeitraum -- Yahoo liefert Intraday nur als gleitendes Fenster.
+    Zeitstempel bleiben in UTC, damit Sommerzeit keine Luecken erzeugt.
+    """
+    if interval not in INTERVALS:
+        raise DataError(f"Aufloesung {interval!r} nicht unterstuetzt: {sorted(INTERVALS)}")
+
+    symbol = symbol.upper()
+    path = _cache_path(symbol, interval)
+
+    if path.exists() and not refresh:
+        age = (dt.datetime.now() - dt.datetime.fromtimestamp(path.stat().st_mtime))
+        if age < dt.timedelta(minutes=max_age_minutes):
+            cached = pd.read_csv(path, parse_dates=["date"])
+            if not cached.empty:
+                return cached
+
+    owned = session is None
+    session = session or make_session()
+    try:
+        resp = session.get(
+            CHART_URL.format(symbol=symbol),
+            params={"range": INTERVALS[interval], "interval": interval},
+            timeout=30,
+        )
+        if resp.status_code != 200:
+            raise DataError(f"{symbol} {interval}: HTTP {resp.status_code}")
+        payload = resp.json().get("chart", {})
+        if payload.get("error"):
+            raise DataError(f"{symbol} {interval}: {payload['error']}")
+        results = payload.get("result") or []
+        if not results:
+            raise DataError(f"{symbol} {interval}: leere Antwort")
+
+        result = results[0]
+        stamps = result.get("timestamp") or []
+        if not stamps:
+            raise DataError(f"{symbol} {interval}: keine Balken")
+
+        quote = result["indicators"]["quote"][0]
+        frame = pd.DataFrame(
+            {
+                "date": pd.to_datetime(stamps, unit="s", utc=True),
+                "open": quote["open"],
+                "high": quote["high"],
+                "low": quote["low"],
+                "close": quote["close"],
+                "volume": quote["volume"],
+            }
+        )
+    finally:
+        if owned:
+            session.close()
+
+    # Intraday kennt keine Dividenden-/Split-Bereinigung im Feed. Fuer Fenster
+    # von Tagen bis wenigen Jahren ist das vertretbar, muss aber bewusst sein.
+    frame["adjclose"] = frame["close"]
+    frame = frame.dropna(subset=["open", "high", "low", "close"])
+    frame = frame.drop_duplicates(subset="date").sort_values("date").reset_index(drop=True)
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    frame.to_csv(path, index=False)
+    return frame
+
+
+def load_timeframes(symbol: str, intervals: tuple[str, ...] = ("15m", "1h", "1d"), *,
+                    session: requests.Session | None = None,
+                    refresh: bool = False) -> dict[str, pd.DataFrame]:
+    """Laedt dieselbe Aktie in mehreren Aufloesungen."""
+    owned = session is None
+    session = session or make_session()
+    out: dict[str, pd.DataFrame] = {}
+    try:
+        for interval in intervals:
+            if interval == "1d":
+                today = dt.date.today()
+                frame = load_prices(symbol, today - dt.timedelta(days=3650), today,
+                                    session=session, refresh=refresh)
+                frame = frame.copy()
+                frame["date"] = pd.to_datetime(frame["date"], utc=True)
+            else:
+                frame = load_intraday(symbol, interval, session=session, refresh=refresh)
+            out[interval] = frame
+            time.sleep(0.12)
+    finally:
+        if owned:
+            session.close()
+    return out
 
 
 def make_session() -> requests.Session:

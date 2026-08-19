@@ -246,3 +246,93 @@ class TestSummarise:
 
         result = summarise(measured, horizons=(5,))
         assert abs(result.at[0, "t_geclustert"]) < abs(result.at[0, "t_naiv"])
+
+
+class TestTimeframes:
+    """Der teuerste Fehler beim Multi-Timeframe ist Zukunftswissen."""
+
+    def _hourly(self, n=200, start="2024-01-02 14:30"):
+        idx = pd.date_range(start, periods=n, freq="1h", tz="UTC")
+        return pd.DataFrame({
+            "date": idx,
+            "open": np.linspace(100, 120, n), "high": np.linspace(101, 121, n),
+            "low": np.linspace(99, 119, n), "close": np.linspace(100, 120, n),
+            "volume": np.full(n, 1000.0), "adjclose": np.linspace(100, 120, n),
+        })
+
+    def _daily(self, n=140, start="2023-10-01"):
+        idx = pd.date_range(start, periods=n, freq="1D", tz="UTC")
+        return pd.DataFrame({
+            "date": idx,
+            "open": np.linspace(100, 160, n), "high": np.linspace(101, 161, n),
+            "low": np.linspace(99, 159, n), "close": np.linspace(100, 160, n),
+            "volume": np.full(n, 1000.0), "adjclose": np.linspace(100, 160, n),
+        })
+
+    def test_daily_bar_not_visible_before_it_closes(self):
+        """Eine Tageskerze darf erst nach Handelsschluss sichtbar sein."""
+        from research.timeframes import BAR_DURATION, add_trend
+        daily = add_trend(self._daily(), "1d")
+        first = daily.iloc[0]
+        # Zeitstempel 00:00 UTC, verfuegbar erst 21 Stunden spaeter.
+        assert first["available_at"] - first["date"] == BAR_DURATION["1d"]
+        assert first["available_at"].hour == 21
+
+    def test_alignment_uses_only_closed_higher_bars(self):
+        from research.timeframes import align
+        aligned = align(self._hourly(), "1h", {"1d": self._daily()})
+        merged = aligned.dropna(subset=["state_1d"])
+        assert not merged.empty
+
+        from research.timeframes import add_trend
+        daily = add_trend(self._daily(), "1d").dropna(subset=["state"])
+
+        for row in merged.head(50).itertuples(index=False):
+            # Der angebundene Tagesbalken muss vor dem Basisbalken fertig gewesen sein.
+            usable = daily[daily["available_at"] <= row.available_at]
+            assert not usable.empty
+            assert usable.iloc[-1]["state"] == row.state_1d
+
+    def test_no_future_daily_state_leaks_in(self):
+        """Kernprobe: ein spaeterer Tagesbalken darf das Ergebnis nicht aendern."""
+        from research.timeframes import align
+        daily = self._daily()
+        full = align(self._hourly(), "1h", {"1d": daily})
+
+        # Alles ab der Haelfte aus den Tagesdaten entfernen ...
+        cutoff = full["available_at"].iloc[len(full) // 2]
+        truncated_daily = daily[daily["date"] + pd.Timedelta(hours=21) <= cutoff]
+        partial = align(self._hourly(), "1h", {"1d": truncated_daily})
+
+        # ... darf die frueheren Basisbalken nicht veraendert haben.
+        early = full["available_at"] <= cutoff
+        pd.testing.assert_series_equal(
+            full.loc[early, "state_1d"].reset_index(drop=True),
+            partial.loc[early, "state_1d"].reset_index(drop=True),
+        )
+
+    def test_confluence_counts_agreement(self):
+        from research.timeframes import confluence
+        frame = pd.DataFrame({
+            "date": pd.date_range("2024-01-01", periods=4, tz="UTC"),
+            "close": [100.0, 101, 102, 103],
+            "state_1h": [1.0, 1, -1, 1],
+            "state_1d": [1.0, -1, -1, np.nan],
+        })
+        out = confluence(frame, ("1h", "1d"))
+        assert list(out["score"][:3]) == [2.0, 0.0, -2.0]
+        assert list(out["einig"][:3]) == [True, False, True]
+        assert bool(out["einig"].iloc[3]) is False  # fehlende Ebene zaehlt nicht als einig
+
+    def test_disagreement_excluded_from_results(self):
+        from research.timeframes import by_confluence
+        frame = pd.DataFrame({
+            "date": pd.date_range("2024-01-01", periods=6, freq="1h", tz="UTC"),
+            "score": [0.0, 0, 2, 2, 2, 2],
+            "richtung": [0.0, 0, 1, 1, 1, 1],
+            "sig_1": [0.0, 0.0, 0.01, 0.02, -0.01, 0.03],
+        })
+        result = by_confluence(frame, 1)
+        # Die beiden richtungslosen Balken duerfen nicht als Treffer zaehlen.
+        assert 0 not in result["einigkeit"].tolist()
+        assert result.loc[result["einigkeit"] == 2, "n"].iloc[0] == 4

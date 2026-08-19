@@ -118,3 +118,77 @@ Ein schwacher positiver Drift nach Gap-Ups über 20 Tage (rund +0,9 %, t ≈ 2,0
 in die Richtung, die die Literatur zum Post-Earnings Announcement Drift erwarten lässt.
 Bei über hundert getesteten Varianten ist t ≈ 2 aber kein Befund, und 0,9 % über
 20 Tage liegen unter den Handelskosten der meisten Privatanleger.
+
+---
+
+# Multi-Timeframe: mehrere Zeitebenen gleichzeitig
+
+Prüft die Behauptung *„wenn 15-Minuten-, Stunden- und Tageschart alle dasselbe sagen,
+ist das Signal belastbarer."*
+
+```bash
+python -m research.tf_cli                              # 1h-Basis + Tageschart, 3 Jahre
+python -m research.tf_cli --base 15m --higher 1h,1d    # alle drei Ebenen, 88 Tage
+```
+
+## Der Fallstrick, den das Modul abdichtet
+
+Um 14:00 Uhr steht die Tageskerze **noch nicht fest** — sie schließt erst am Abend.
+Wer trotzdem ihren Trend abliest, benutzt Wissen aus der Zukunft. Das ist der mit
+Abstand häufigste Fehler bei Multi-Timeframe-Backtests, und er macht aus jedem
+Zufallssignal einen Traumbacktest.
+
+Deshalb bekommt hier jeder Balken ein `available_at` — den Zeitpunkt, ab dem er
+abgeschlossen und damit überhaupt lesbar ist. Höhere Zeitebenen werden ausschließlich
+über dieses Feld angebunden (`merge_asof`, rückwärts). Drei Tests sichern das ab,
+darunter einer, der prüft, dass das Entfernen späterer Tagesdaten frühere Ergebnisse
+nicht verändert.
+
+## Was die Datenquelle hergibt
+
+| Auflösung | Historie |
+|---|---|
+| 1m | 8 Handelstage |
+| 5m / 15m / 30m | 88 Kalendertage |
+| 1h | ~3 Jahre |
+| 1d | 10+ Jahre |
+
+Ein 10-Minuten-Intervall bietet Yahoo nicht an; 15m ist die nächstgelegene Stufe.
+
+## Ergebnis
+
+**152.414 Stundenbalken, 30 Aktien, 2023–2026** (1h-Basis + Tageschart):
+
+Die Zeitebenen sind **weitgehend unabhängig** — die Korrelation der Trendrichtungen
+liegt bei nur **+0,18**. Eine Bestätigung über mehrere Ebenen ist also tatsächlich
+zusätzliche Information und nicht bloß dieselbe Zahl doppelt abgelesen.
+
+Nur nützt es nichts:
+
+| | n | Mittel | Trefferquote | t geclustert |
+|---|---:|---:|---:|---:|
+| nur 1h-Chart | 151.394 | +3,43 bp | 50,78 % | — |
+| 1h + 1d einig | 90.974 | +3,87 bp | 50,97 % | 1,45 |
+
+**46.830 15-Minuten-Balken, 30 Aktien, 3 Monate** (alle drei Ebenen, 4-Stunden-Horizont):
+
+| | n | Mittel | Trefferquote | t geclustert |
+|---|---:|---:|---:|---:|
+| nur 15m | 45.570 | −1,27 bp | 49,67 % | −0,24 |
+| 15m + 1h | 30.903 | −4,43 bp | 49,16 % | −0,84 |
+| 15m + 1h + 1d | 17.165 | −4,29 bp | 49,75 % | −1,06 |
+
+Jede zusätzliche Zeitebene halbiert die Zahl der Signale und verbessert das Ergebnis
+nicht. Zum Vergleich: Ein Roundtrip kostet bei liquiden US-Aktien 10 bis 30 bp. Der
+gemessene Effekt liegt eine Größenordnung darunter.
+
+## Grenzen
+
+- Das 88-Tage-Fenster ist **zu kurz für die Tagesebene**: Der Tagestrend dreht dort im
+  Schnitt nur 2,6 mal, ist also fast eine Konstante. Deshalb lässt sich seine
+  Korrelation im 15m-Lauf nicht berechnen (NaN in der Matrix). Belastbar ist nur der
+  1h-Lauf über drei Jahre.
+- Intraday-Daten sind **nicht dividendenbereinigt**. Über Tage bis wenige Jahre
+  vertretbar, für lange Zeiträume nicht.
+- Getestet ist der EMA-Crossover als Trenddefinition. Andere Definitionen (Struktur,
+  Ranges, Volumenprofil) sind damit nicht widerlegt — nur diese eine.

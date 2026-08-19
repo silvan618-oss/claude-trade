@@ -41,7 +41,8 @@ belastbarer Drift messbar. Mit Hebel 50 werden 69 % der Positionen ausgeknockt â
 darunter fast die HÃ¤lfte derer, deren Richtung am Ende richtig war.
 
 ```bash
-python -m research.cli
+python -m research.cli      # Ereignisse: was passiert nach Nachrichten
+python -m research.tf_cli   # Multi-Timeframe: bringt Einigkeit der Zeitebenen etwas
 ```
 
 Der wichtigere Teil ist aber nicht das Ergebnis, sondern das Werkzeug: eine
