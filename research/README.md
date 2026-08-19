@@ -817,3 +817,64 @@ von fünfzehn Positionen. Das ist der Aufwand: einmal im Monat zwei Order.
 realistischere Planungsgröße als der des guten Jahrzehnts (+6,7 pp). Steuern kommen
 noch ab. Und es wird Jahre geben, in denen die Regel schlechter läuft als der Index —
 1999–2009 war fast das ganze Jahrzehnt so, bei −50 % Drawdown.
+
+---
+
+# Zur Eröffnung einsteigen, nachdem die Nachricht da ist
+
+Die Idee: Nur wenige verfolgen Termine täglich. Kommt über Nacht eine sehr gute Meldung,
+steigt man morgens zur Eröffnung ein und verdient an den Nachzüglern, die erst im Lauf
+des Tages nachkaufen.
+
+Das ist ein **anderer Trade** als die Ereignisstudie ganz oben — dort war der Einstieg
+der Schlusskurs, hier die Eröffnung. `research/news_entry.py` misst ihn getrennt.
+
+## Ergebnis: je größer die Nachricht, desto schlechter
+
+Einstieg zur Eröffnung, 1.373 positive Gaps ≥ 5 % mit doppeltem Volumen, 156 Aktien:
+
+| Gap-Größe | bis Schluss desselben Tages |
+|---|---:|
+| ≥ 5 % | +0,36 % |
+| ≥ 10 % | **−0,18 %** |
+| ≥ 20 % | **−2,35 %** |
+
+Die Nachzügler-These sagt das Gegenteil vorher. Tatsächlich verblassen genau die
+größten Meldungen im Lauf des Tages.
+
+Der Grund ist der Zeitpunkt: **Die Eröffnung ist der Moment, in dem die Nachzügler
+kaufen.** Wer dort einsteigt, ist einer von ihnen — und kauft von denen, die die
+Meldung schon am Vorabend um 22:03 hatten und jetzt in die Euphorie hinein verkaufen.
+
+## Die 20-Tage-Zahl, die verschwindet
+
+Roh sieht der 20-Tage-Horizont stark aus: +3,19 %, Trefferquote 57,2 %, t = **+7,46**.
+Nach den beiden nötigen Korrekturen bleibt nichts:
+
+| | t-Wert |
+|---|---:|
+| roh | **+7,46** |
+| marktbereinigt | +2,18 |
+| zusätzlich nach Datum geclustert | **+0,75** |
+
+Der Marktabzug nimmt die allgemeine Aufwärtsdrift über 20 Tage heraus. Die Clusterung
+trägt den Rest: 1.373 Ereignisse verteilen sich auf nur **787 Handelstage** — an einem
+großen Berichtstag gapt der halbe Sektor gleichzeitig. Das sind keine unabhängigen
+Beobachtungen.
+
+Belastbar wäre |t| > 3. Der höchste geclusterte Wert über alle Horizonte ist 0,75.
+
+## Moderna, das genannte Beispiel
+
+MRNAs sechs größte positive Gaps seit 2015, jeweils Einstieg zur Eröffnung:
+
+| Datum | Gap | bis Schluss | +5 Tage | +20 Tage |
+|---|---:|---:|---:|---:|
+| 2020-05-18 | +29,2 % | −7,1 % | −33,0 % | −25,3 % |
+| 2020-02-27 | +23,0 % | **−27,1 %** | −21,9 % | −22,1 % |
+| 2020-02-26 | +22,3 % | +0,4 % | −5,4 % | −6,6 % |
+| 2020-04-17 | +20,7 % | −4,4 % | +3,1 % | +36,1 % |
+| 2020-02-25 | +19,2 % | +7,3 % | +26,0 % | +16,6 % |
+| 2021-11-26 | +16,8 % | +3,2 % | −4,0 % | −22,7 % |
+
+Über alle 33 MRNA-Ereignisse: **−2,60 %** bis Schluss.

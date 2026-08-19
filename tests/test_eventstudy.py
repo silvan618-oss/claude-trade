@@ -910,3 +910,62 @@ class TestRotation:
         kontrolle = random_control(prices, config)
         # Gleiche Stichtage -> die Differenz ist auf das Signal zurueckzufuehren.
         assert list(strategie.index) == list(kontrolle.index)
+
+
+class TestNewsEntry:
+    """Einstieg zur Eroeffnung nach einer Meldung."""
+
+    def _frame(self, n=200, gap_at=100, gap=0.10):
+        rng = np.random.default_rng(9)
+        close = 100 * np.exp(np.cumsum(rng.normal(0, 0.005, n)))
+        opens = close.copy()
+        opens[gap_at] = close[gap_at - 1] * (1 + gap)
+        close[gap_at] = opens[gap_at] * 1.02
+        vol = np.full(n, 1_000.0); vol[gap_at] = 8_000.0
+        return pd.DataFrame({
+            "date": pd.bdate_range("2020-01-01", periods=n),
+            "open": opens, "high": np.maximum(opens, close) * 1.01,
+            "low": np.minimum(opens, close) * 0.99, "close": close,
+            "volume": vol, "adjclose": close,
+        })
+
+    def test_entry_price_is_the_open_not_the_close(self):
+        """Der Gap darf NICHT in der gemessenen Rendite stecken."""
+        from research.events import prepare
+        from research.news_entry import NewsConfig, find_entries
+        frame = prepare(self._frame())
+        flat = prepare(pd.DataFrame({
+            "date": pd.bdate_range("2020-01-01", periods=200),
+            "open": np.full(200, 100.0), "high": np.full(200, 100.0),
+            "low": np.full(200, 100.0), "close": np.full(200, 100.0),
+            "volume": np.full(200, 1000.0), "adjclose": np.full(200, 100.0)}))
+        found = find_entries({"T": frame}, flat, NewsConfig(), horizonte=(0,))
+        assert len(found) == 1
+        # Eroeffnung -> Schluss desselben Tages sind +2 %, der Gap von 10 % zaehlt nicht.
+        assert found["t0"].iloc[0] == pytest.approx(2.0, abs=0.05)
+
+    def test_market_move_is_removed(self):
+        from research.events import prepare
+        from research.news_entry import NewsConfig, find_entries
+        frame = prepare(self._frame())
+        # Benchmark macht exakt dieselbe Tagesbewegung -> bereinigt bleibt 0.
+        bench = frame[["date", "open", "high", "low", "close", "volume", "adjclose"]].copy()
+        found = find_entries({"T": frame}, bench, NewsConfig(), horizonte=(5,))
+        assert abs(found["t5"].iloc[0]) < 2.5
+
+    def test_clustered_t_below_naive_when_events_share_days(self):
+        from research.news_entry import evaluate
+        rng = np.random.default_rng(4)
+        tage = pd.to_datetime(np.repeat(pd.date_range("2020-01-01", periods=5), 60))
+        werte = np.repeat([2.0, 1.8, 2.2, 1.9, 2.1], 60) + rng.normal(0, 0.05, 300)
+        entries = pd.DataFrame({"date": tage, "t20": werte})
+        result = evaluate(entries, horizonte=(20,))
+        assert abs(result["t_geclustert"].iloc[0]) < abs(result["t_naiv"].iloc[0])
+
+    def test_costs_are_subtracted(self):
+        from research.news_entry import NewsConfig, evaluate
+        entries = pd.DataFrame({
+            "date": pd.date_range("2020-01-01", periods=100),
+            "t0": np.full(100, 1.0)})
+        result = evaluate(entries, NewsConfig(kosten_bp=30), horizonte=(0,))
+        assert result["nach_kosten_%"].iloc[0] == pytest.approx(0.70)
