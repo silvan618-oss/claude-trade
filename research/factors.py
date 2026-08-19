@@ -124,3 +124,53 @@ def summarise(returns: pd.Series, periods_per_year: float = 12.0) -> dict:
         "max_drawdown_%": drawdown * 100,
         "gesamt_faktor": float(cumulative.iloc[-1]),
     }
+
+
+# Sektorzuordnung fuer die Replikationsprobe. Grob, aber ausreichend: Es geht
+# nur darum, voneinander unabhaengige Teilstichproben zu bilden.
+SEKTOREN = {
+    "Technologie": ["AAPL", "MSFT", "NVDA", "AMD", "INTC", "CSCO", "ORCL", "CRM",
+                     "ADBE", "QCOM", "AVGO", "TXN", "MU", "AMAT", "NOW", "IBM",
+                     "ACN", "ADI", "LRCX", "KLAC", "SNPS", "CDNS", "HPQ", "DELL"],
+    "Konsum": ["AMZN", "TSLA", "HD", "MCD", "NKE", "SBUX", "TGT", "LOW", "BKNG",
+                "F", "GM", "YUM", "ROST", "TJX", "DHI", "LEN", "EBAY", "APTV"],
+    "Basiskonsum": ["PG", "KO", "PEP", "WMT", "COST", "MDLZ", "CL", "KMB", "GIS",
+                     "SYY", "HSY", "K", "STZ", "MO", "PM", "KHC", "CAG"],
+    "Gesundheit": ["JNJ", "PFE", "MRK", "ABBV", "LLY", "UNH", "CVS", "AMGN",
+                    "GILD", "BIIB", "VRTX", "REGN", "BMY", "ABT", "TMO", "DHR",
+                    "SYK", "BSX", "MDT", "ZTS"],
+    "Finanzen": ["JPM", "BAC", "WFC", "GS", "MS", "C", "AXP", "BLK", "SCHW",
+                  "COF", "V", "MA", "USB", "PNC", "TFC", "BK", "SPGI", "CME",
+                  "ICE", "AIG", "MET", "PRU", "ALL", "TRV"],
+    "Industrie": ["BA", "CAT", "DE", "GE", "HON", "LMT", "RTX", "UPS", "FDX",
+                   "UNP", "MMM", "EMR", "ITW", "CSX", "NSC", "GD", "NOC", "ETN",
+                   "PH", "ROK"],
+    "Energie_Rohstoff": ["XOM", "CVX", "COP", "SLB", "OXY", "FCX", "NEM", "DOW",
+                          "LIN", "NUE", "PSX", "VLO", "MPC", "EOG", "HAL", "APD",
+                          "SHW", "ECL", "PPG", "STLD"],
+    "Versorger_Immo": ["NEE", "DUK", "SO", "D", "AEP", "EXC", "XEL", "SRE", "PEG",
+                        "ED", "AMT", "PLD", "CCI", "EQIX", "PSA", "SPG", "O", "WELL"],
+}
+
+
+def replicate(prepared: dict, groups: dict[str, list[str]], signal: str,
+              horizon_months: int = 1, min_symbols: int = 12) -> pd.DataFrame:
+    """Dasselbe Signal getrennt in voneinander unabhaengigen Teilstichproben.
+
+    Das ist der eigentliche Existenzbeleg. Ein einzelner t-Wert kann Glueck sein.
+    Wenn dasselbe Signal in acht getrennten Gruppen unabhaengig voneinander
+    positiv herauskommt, ist Glueck als Erklaerung sehr unwahrscheinlich --
+    bei reinem Zufall waere jede Gruppe eine 50:50-Muenze.
+    """
+    rows = []
+    for name, symbols in groups.items():
+        available = {s: prepared[s] for s in symbols if s in prepared}
+        if len(available) < min_symbols:
+            continue
+        panel = add_forward(add_signals(build_panel(available)), months=horizon_months)
+        returns = long_short_returns(panel, signal,
+                                     rebalance_days=TRADING_DAYS_PER_MONTH * horizon_months)
+        stats = summarise(returns, periods_per_year=12 / horizon_months)
+        if stats:
+            rows.append({"gruppe": name, "n_aktien": len(available), **stats})
+    return pd.DataFrame(rows)

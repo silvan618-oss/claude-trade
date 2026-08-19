@@ -48,9 +48,10 @@ python -m research.pattern_cli  # 25 bekannte Kerzenmuster einzeln vermessen
 python -m research.discovery_cli  # Muster selbst finden statt aus dem Lehrbuch
 ```
 
-Und das einzige Signal, das alle Prüfungen überstanden hat: **Momentum im Querschnitt**
-(`research/factors.py`) — +6,9 % pro Jahr, Sharpe 0,30, −37 % Drawdown. Monate statt
-Stunden, Portfolio statt Einzelwette, höchster tragbarer Hebel **3,8**.
+Momentum im Querschnitt (`research/factors.py`) sah zunächst tragfähig aus (+6,9 %/Jahr
+auf 95 Aktien ab 2010), **repliziert aber nicht** auf 159 Aktien ab 2000 (−0,21 %/Jahr).
+Der Test ist allerdings durch Survivorship Bias gegen Momentum verzerrt — mit Gratisdaten
+ist die Frage nicht entscheidbar. Details in [research/README.md](research/README.md).
 
 Der wichtigere Teil ist aber nicht das Ergebnis, sondern das Werkzeug: eine
 Zufallskontrollgruppe, geclusterte t-Werte und eine Pfadsimulation für Hebelprodukte.

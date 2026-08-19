@@ -624,3 +624,61 @@ Der schlechteste Einzelmonat der Strategie: **−26,28 %**. Mit Hebel 30 wären 
 > **Höchster Hebel, den dieses Signal überhaupt verträgt: 3,8**
 
 Nicht 30. Nicht 50. Das ist die Zahl, an der sich die ganze Frage entscheidet.
+
+## KORREKTUR: Momentum repliziert nicht auf dem größeren Datensatz
+
+Das Ergebnis oben (+6,88 % pro Jahr) stammt aus 95 Aktien ab 2010. Auf **159 Aktien
+ab 2000** verschwindet es:
+
+| | 95 Aktien, ab 2010 | 159 Aktien, ab 2000 |
+|---|---:|---:|
+| pro Jahr | +6,88 % | **−0,21 %** |
+| Sharpe | +0,30 | **−0,01** |
+| t | +1,17 | **−0,05** |
+
+**Replikation über 5 unabhängige Sektoren:** positiv in 3 von 5. Bei reinem Zufall
+wären es im Mittel 2,5 — die Wahrscheinlichkeit für „3 oder mehr" liegt bei 50 %.
+
+| Sektor | pro Jahr | Sharpe | t |
+|---|---:|---:|---:|
+| Technologie | +10,73 % | +0,35 | +1,73 |
+| Gesundheit | +4,18 % | +0,21 | +0,75 |
+| Industrie | +0,74 % | +0,04 | +0,21 |
+| Energie/Rohstoff | −0,01 % | −0,00 | −0,00 |
+| Finanzen | −4,38 % | −0,15 | −0,70 |
+
+**Replikation über 5 unabhängige Zeiträume:** positiv in 2 von 5.
+
+| Zeitraum | pro Jahr | Sharpe |
+|---|---:|---:|
+| 2001–2005 | −2,51 % | −0,08 |
+| 2006–2010 | −6,83 % | −0,27 |
+| 2011–2015 | +9,26 % | +0,76 |
+| 2016–2020 | −7,86 % | −0,38 |
+| 2021–2026 | +7,31 % | +0,44 |
+
+**Und die Kontrolle:** ersetzt man das Momentum-Signal durch **Zufallszahlen**, kommt
++2,08 % pro Jahr bei Sharpe +0,26 heraus — also *besser* als das echte Signal.
+
+Damit ist das Ergebnis der vorigen Sektion zurückgezogen. Es war ein Artefakt aus
+Universum und Zeitraum.
+
+## Warum dieser Test trotzdem nichts beweist — in beide Richtungen
+
+Der Test ist **systematisch gegen Momentum verzerrt**, und zwar aus einem konkreten
+Grund:
+
+Momentum verkauft short die schwächsten Aktien. Die schwächsten Aktien der Geschichte
+sind genau die, die pleitegegangen sind — Lehman, Enron, WorldCom, Kodak, Sears,
+Wirecard, SVB. Die sind in einem Universum aus heutigen Firmen **alle nicht enthalten**.
+Der Short-Zweig wird also planmäßig um seine besten Trades gebracht.
+
+Dazu kommt: 2000 haben nur 86 % der Aktien überhaupt Daten, und drei von acht Sektoren
+liefen mangels Historie gar nicht durch. Der Drawdown von −101 % im Finanzsektor zeigt
+außerdem, dass die einfache Gleichgewichtung ohne Risikosteuerung an ihre Grenze stößt.
+
+**Fazit: Mit frei verfügbaren Yahoo-Daten lässt sich Momentum weder belegen noch
+widerlegen.** Nicht wegen mangelnder Mühe, sondern weil die Datenquelle strukturell
+ungeeignet ist. Genau dafür existieren survivorship-freie Point-in-Time-Datenbanken
+(CRSP, Compustat) — und genau deshalb wird akademische Finanzforschung mit ihnen
+gemacht und nicht mit Gratisdaten.
