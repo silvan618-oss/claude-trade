@@ -223,3 +223,62 @@ def trade_top_decile(predictions: pd.DataFrame, *, quantile: float = 0.9,
         "sharpe": float(daily.mean() / daily.std(ddof=1) * np.sqrt(252))
         if daily.std(ddof=1) > 0 else np.nan,
     }
+
+
+def calibration(predictions: pd.DataFrame, bins: int = 10) -> pd.DataFrame:
+    """Halten die Wahrscheinlichkeiten, was sie versprechen?
+
+    Wenn das Modell 70 Prozent sagt -- steigen dann auch 70 Prozent dieser Faelle?
+    Ohne Kalibrierung ist jede Auswahl der "besten" Signale sinnlos, weil die
+    Rangfolge dann nichts bedeutet.
+    """
+    if predictions.empty:
+        return pd.DataFrame()
+    frame = predictions.copy()
+    frame["bin"] = pd.qcut(frame["wahrsch_hoch"], bins, duplicates="drop")
+
+    grouped = frame.groupby("bin", observed=True)
+    out = pd.DataFrame({
+        "n": grouped.size(),
+        "modell_sagt_%": grouped["wahrsch_hoch"].mean() * 100,
+        "tatsaechlich_%": grouped["tatsaechlich"].mean() * 100,
+        "rendite_bp": grouped["rendite"].mean() * 10_000,
+    }).reset_index(drop=True)
+    out.insert(0, "dezil", range(1, len(out) + 1))
+    out["abweichung_pp"] = out["tatsaechlich_%"] - out["modell_sagt_%"]
+    return out
+
+
+def selectivity_curve(predictions: pd.DataFrame,
+                      top_n: tuple[int, ...] = (100, 50, 20, 10, 5, 3, 1),
+                      cost_bp: float = 10.0) -> pd.DataFrame:
+    """Nur die zuversichtlichsten N Signale pro Tag handeln.
+
+    Genau die Idee "von tausend Moeglichkeiten die zehn besten nehmen".
+    Waechst die Trefferquote, je waehlerischer man wird?
+    """
+    if predictions.empty:
+        return pd.DataFrame()
+
+    frame = predictions.copy()
+    frame["rang"] = frame.groupby("date")["wahrsch_hoch"].rank(
+        ascending=False, method="first")
+
+    rows = []
+    for n in top_n:
+        picked = frame[frame["rang"] <= n]
+        if picked.empty:
+            continue
+        net = picked["rendite"] - cost_bp / 10_000.0
+        daily = net.groupby(picked["date"]).mean()
+        rows.append({
+            "beste_pro_tag": n,
+            "n_trades": len(picked),
+            "modell_sagt_%": picked["wahrsch_hoch"].mean() * 100,
+            "treffer_%": picked["tatsaechlich"].mean() * 100,
+            "roh_bp": picked["rendite"].mean() * 10_000,
+            "nach_kosten_bp": net.mean() * 10_000,
+            "sharpe": (float(daily.mean() / daily.std(ddof=1) * np.sqrt(252))
+                       if daily.std(ddof=1) > 0 else np.nan),
+        })
+    return pd.DataFrame(rows)

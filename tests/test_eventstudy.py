@@ -560,3 +560,58 @@ class TestPatterns:
         # Aktie == Benchmark -> marktbereinigte Rendite muss null sein.
         assert dataset["fwd_abn"].abs().max() < 1e-9
         assert dataset["fwd"].abs().max() > 0
+
+
+class TestSelectivity:
+    """Kalibrierung und Auswahl der besten Signale."""
+
+    def _preds(self, n=1000, seed=0, informative=True):
+        rng = np.random.default_rng(seed)
+        prob = rng.uniform(0.2, 0.8, n)
+        # Bei informative=True trifft die Wahrscheinlichkeit tatsaechlich zu.
+        actual = (rng.random(n) < (prob if informative else 0.5)).astype(int)
+        return pd.DataFrame({
+            "date": np.repeat(pd.date_range("2024-01-01", periods=n // 10), 10),
+            "symbol": [f"S{i%10}" for i in range(n)],
+            "wahrsch_hoch": prob,
+            "vorhersage": (prob > 0.5).astype(int),
+            "tatsaechlich": actual,
+            "rendite": np.where(actual == 1, 0.01, -0.01),
+        })
+
+    def test_calibration_detects_honest_probabilities(self):
+        from research.ml import calibration
+        table = calibration(self._preds(n=5000, informative=True))
+        # Ein ehrliches Modell liegt in jedem Dezil nah an seiner Ansage.
+        assert table["abweichung_pp"].abs().max() < 8
+
+    def test_calibration_detects_overconfidence(self):
+        from research.ml import calibration
+        table = calibration(self._preds(n=5000, informative=False))
+        # Sagt das Modell 80 % und liefert 50 %, muss die Abweichung stark negativ sein.
+        assert table["abweichung_pp"].iloc[-1] < -15
+        assert table["abweichung_pp"].iloc[0] > 10
+
+    def test_selectivity_picks_top_n_per_day(self):
+        from research.ml import selectivity_curve
+        preds = self._preds(n=1000, informative=True)
+        curve = selectivity_curve(preds, top_n=(10, 3, 1), cost_bp=0.0)
+        days = preds["date"].nunique()
+        assert curve.loc[curve["beste_pro_tag"] == 1, "n_trades"].iloc[0] == days
+        assert curve.loc[curve["beste_pro_tag"] == 3, "n_trades"].iloc[0] == days * 3
+
+    def test_selectivity_raises_hit_rate_when_model_is_real(self):
+        """Kontrollprobe des Tests selbst: bei echtem Signal MUSS die Kurve steigen."""
+        from research.ml import selectivity_curve
+        curve = selectivity_curve(self._preds(n=20000, informative=True),
+                                  top_n=(10, 1), cost_bp=0.0)
+        breit = curve.loc[curve["beste_pro_tag"] == 10, "treffer_%"].iloc[0]
+        eng = curve.loc[curve["beste_pro_tag"] == 1, "treffer_%"].iloc[0]
+        assert eng > breit, "Bei echtem Signal muss Selektivitaet die Trefferquote heben"
+
+    def test_selectivity_flat_when_model_is_noise(self):
+        from research.ml import selectivity_curve
+        curve = selectivity_curve(self._preds(n=20000, informative=False),
+                                  top_n=(10, 1), cost_bp=0.0)
+        spanne = curve["treffer_%"].max() - curve["treffer_%"].min()
+        assert spanne < 8, "Bei reinem Rauschen darf Selektivitaet nichts bringen"

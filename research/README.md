@@ -407,3 +407,69 @@ wie es in den nächsten sechs Jahren abschneidet. Genau das müsste anders sein,
 die Muster echt wären.
 
 Höchste Trefferquote irgendwo im ganzen Datensatz: 52,65 %. Nicht 60 %, nicht 70 %.
+
+---
+
+# Selektivität: bringt es etwas, nur die besten Signale zu handeln?
+
+Die Idee: Nicht auf beliebige Trades wetten, sondern aus vielen Möglichkeiten die
+zuversichtlichsten wenigen auswählen. Von tausend Kandidaten die zehn besten.
+
+Das ist testbar, und zwar direkt: Das Modell aus `ml.py` gibt für jede Aktie und jeden
+Tag eine Wahrscheinlichkeit aus. Man kann sie sortieren, oben abschneiden und nachsehen,
+ob die Trefferquote steigt.
+
+## Kalibrierung zuerst
+
+Bevor man die „besten" auswählt, muss die Rangfolge überhaupt etwas bedeuten. Sagt das
+Modell 70 %, steigen dann auch 70 %?
+
+| Dezil | Modell sagt | tatsächlich | Abweichung |
+|---:|---:|---:|---:|
+| 1 | 36,08 % | 50,16 % | **+14,08 pp** |
+| 5 | 51,48 % | 51,81 % | +0,33 pp |
+| 9 | 62,47 % | 53,66 % | −8,81 pp |
+| 10 | **75,40 %** | **54,07 %** | **−21,33 pp** |
+
+Das Modell ist massiv überzeugt von sich. Seine Wahrscheinlichkeiten reichen von 5,7 %
+bis 98,2 % — die Wirklichkeit dahinter bewegt sich zwischen 50 % und 54 %.
+
+## Und die Auswahlkurve
+
+Nur die besten N pro Tag handeln (aus rund 95 Kandidaten täglich):
+
+| beste pro Tag | Modell sagt | **tatsächlich** | nach Kosten |
+|---:|---:|---:|---:|
+| 100 | 53,33 % | **51,68 %** | −1,09 bp |
+| 50 | 55,83 % | 52,08 % | −0,98 bp |
+| 20 | 57,82 % | 51,95 % | −1,38 bp |
+| 10 | 58,93 % | **51,65 %** | −2,65 bp |
+| 5 | 59,87 % | 51,66 % | −1,41 bp |
+| 3 | 60,48 % | **50,80 %** | −1,93 bp |
+| 1 | 61,53 % | 51,05 % | +0,83 bp |
+
+Die mittlere Spalte steigt von 53 % auf 62 %. Die rechte bleibt flach bei 51 %.
+
+**Selektivität erhöht die Zuversicht, nicht die Trefferquote.** Je wählerischer man
+wird, desto größer die Lücke zwischen dem, was man zu wissen glaubt, und dem, was
+eintritt.
+
+## Die Kontrolle
+
+Dasselbe mit einem Modell, das auf **durchgewürfelten** Zielwerten trainiert wurde:
+
+| beste pro Tag | tatsächlich | nach Kosten | Sharpe |
+|---:|---:|---:|---:|
+| 10 | 52,11 % | +0,72 bp | +0,15 |
+| 5 | 51,92 % | +1,89 bp | **+0,29** |
+| 3 | 51,90 % | +1,89 bp | +0,23 |
+
+Das auf reinem Rauschen trainierte Modell schneidet bei enger Auswahl **besser** ab als
+das echte. Damit ist jeder scheinbare Gewinn durch Selektivität als Zufall ausgewiesen.
+
+## Der Test prüft sich selbst
+
+`test_selectivity_raises_hit_rate_when_model_is_real` speist ein künstliches Modell mit
+echtem Signal ein und verlangt, dass die Trefferquote bei engerer Auswahl **steigt**.
+Der Test besteht. Das Messwerkzeug funktioniert also — die flache Kurve auf echten
+Daten ist ein Ergebnis, kein kaputtes Messgerät.
