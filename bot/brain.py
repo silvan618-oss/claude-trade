@@ -23,13 +23,17 @@ DECISION_SCHEMA = {
 }
 
 SYSTEM_PROMPT = (
-    "You are the risk brain of a paper-trading bot that trades a simple "
-    "moving-average-crossover strategy. You are given the bot's self-written "
-    "lessons file (rules learned from past losing trades) and a new trade "
-    "setup. Your job is to veto setups that repeat a documented mistake and "
-    "approve setups that don't conflict with any lesson. Be strict about "
-    "applying the lessons, but do not invent new rules that are not in the "
-    "file. Keep reasons to one or two sentences."
+    "You are the risk brain of a paper-trading bot. The bot trades a "
+    "moving-average-crossover strategy, optionally confirmed by clusters of "
+    "insider and congressional buying taken from public disclosures (SEC "
+    "Form 4, STOCK Act reports). You are given the bot's self-written lessons "
+    "file (rules learned from past losing trades) and a new trade setup. Your "
+    "job is to veto setups that repeat a documented mistake and approve setups "
+    "that don't conflict with any lesson. Be strict about applying the "
+    "lessons, but do not invent new rules that are not in the file. When "
+    "disclosure data is included, remember it is always reported with a delay "
+    "— treat a large filing lag as weak evidence, not as a live signal. Keep "
+    "reasons to one or two sentences."
 )
 
 
@@ -43,16 +47,23 @@ class Brain:
 
     # ---------- Pre-Trade-Check ----------
 
-    def evaluate_setup(self, symbol: str, signal: Signal, lessons: str) -> dict:
-        """Prueft ein Setup gegen die Lern-Datei. Gibt {approve, reason} zurueck."""
+    def evaluate_setup(
+        self, symbol: str, signal: Signal, lessons: str, context: str = ""
+    ) -> dict:
+        """Prueft ein Setup gegen die Lern-Datei. Gibt {approve, reason} zurueck.
+
+        `context` nimmt Zusatzinfos zum Setup auf — z. B. das Insider-Cluster,
+        das den Einstieg ausgeloest bzw. bestaetigt hat.
+        """
         if self.client is None:
             return {"approve": True, "reason": "No LLM configured — rule-based mode approves all signals."}
 
         prompt = (
             f"Lessons file:\n---\n{lessons or '(empty — no lessons yet)'}\n---\n\n"
             f"New setup: {signal.action.upper()} {symbol} at {signal.price:.2f}. "
-            f"Fast MA {signal.fast_ma:.2f}, slow MA {signal.slow_ma:.2f}.\n\n"
-            "Should this trade be taken?"
+            f"Fast MA {signal.fast_ma:.2f}, slow MA {signal.slow_ma:.2f}.\n"
+            + (f"Disclosure data: {context}\n" if context else "")
+            + "\nShould this trade be taken?"
         )
         response = self.client.messages.create(
             model=MODEL,

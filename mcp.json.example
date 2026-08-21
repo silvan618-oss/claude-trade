@@ -1,5 +1,6 @@
 {
-  "_comment": "Alternative aus dem Video: Claude direkt per MCP mit Alpaca verbinden. Nach ~/.claude.json bzw. .mcp.json kopieren und Keys eintragen. Server: https://github.com/alpacahq/alpaca-mcp-server",
+  "_comment": "Alternative aus den Videos: Claude direkt per MCP anbinden — Alpaca als Broker (https://github.com/alpacahq/alpaca-mcp-server), QuiverQuant als Datenquelle fuer Insider- und Kongress-Meldungen. Nach ~/.claude.json bzw. .mcp.json kopieren und Keys eintragen.",
+  "_comment_quiver": "Die exakte MCP-URL steht im QuiverQuant-Account bzw. in deren Doku — der Platzhalter unten muss ersetzt werden. In der Claude-Desktop-App fuehrt derselbe Weg ueber Settings -> Connectors.",
   "mcpServers": {
     "alpaca": {
       "command": "uvx",
@@ -8,6 +9,13 @@
         "ALPACA_API_KEY": "DEIN_PAPER_API_KEY",
         "ALPACA_SECRET_KEY": "DEIN_PAPER_SECRET_KEY",
         "ALPACA_PAPER_TRADE": "True"
+      }
+    },
+    "quiverquant": {
+      "type": "http",
+      "url": "https://MCP_URL_AUS_DEINEM_QUIVERQUANT_ACCOUNT",
+      "headers": {
+        "Authorization": "Bearer DEIN_QUIVER_API_TOKEN"
       }
     }
   }
