@@ -89,6 +89,12 @@ Skew auf die eine Achse, 1-Monats-Rendite auf die andere — jeder Name landet i
 | **HEDGED RALLY** | Kurs rauf, Puts bid | Dem Rally wird nicht getraut | Stops nachziehen, nicht verkaufen |
 | **FEAR** | Kurs runter, Puts bid | Alle einig, andere Richtung | Liegen lassen. Kein Schnäppchen |
 
+### Oberfläche
+
+Ein dunkles Board für die Auswertung liegt unter [`gui/skew_terminal.html`](gui/skew_terminal.html) — einzelne Datei, kein Server, keine Installation: im Browser öffnen. Vier Quadranten-Kacheln als Filter, die Karte mit umschaltbarem Fadenkreuz (Null oder Median), Sektor-Balken samt Agreement-Prüfung, sortierbares Board, und der feste Satz zu jedem angeklickten Namen.
+
+Über **Snapshot laden** liest sie eine Datei aus `skew_history/` ein und zeigt deine eigenen Zahlen statt der Demo. Die Datei wird nur im Browser gelesen und nirgendwohin geschickt. Die Rechenlogik ist dieselbe wie in `bot/skew.py` — Quadranten, Sektor-Reads und Satzschablone werden im Browser identisch nachgerechnet, damit Terminal und Oberfläche nie auseinanderlaufen.
+
 ### Starten
 
 ```bash
@@ -169,6 +175,8 @@ bot/
   skew.py       # Skew-Map: Formel, Quadranten, Qualitätsprüfungen, Satzschablone
   skew_data.py  # Datenwege: CSV (Handbetrieb), Alpaca-Optionsketten, Demo
   skew_map.py   # Skew-Lauf: Board, Streudiagramm, Sektoren, Snapshot-Historie
+gui/
+  skew_terminal.html  # interaktives Board, lädt Snapshots aus skew_history/
 memory/
   ledger.jsonl  # entsteht beim ersten Trade
   lessons.md    # wächst mit jedem Verlust-Trade
