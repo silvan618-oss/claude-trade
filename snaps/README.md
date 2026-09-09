@@ -5,27 +5,36 @@ der Snapchat-Beschriftungsbalken und die Snapchat-Wiedergabe (harte Schnitte, ke
 
 ```
 snaps.json     Prompts, Captions, Balkenposition, Look- und Animations-Parameter (alles einstellbar)
-generate.py    Fotos mit einem Bildmodell erzeugen            ->  raw/<id>.png
+generate.py    Prompts für Google Flow exportieren (--export) oder per API generieren  ->  raw/<id>.png
+import_raw.py  Flow-Downloads den Snaps zuordnen             ->  raw/<id>.png
+flow/          fertige Prompts zum Kopieren (PROMPTS.md, <id>.txt)
 snapify.py     iPhone-Look + Caption-Balken                   ->  out/<id>.jpg
 animate.py     Wiedergabe wie in Snapchat                     ->  out/story.mp4 + out/story.html
 reference/     die Original-Snaps als Messvorlage
 fonts/         Nimbus Sans (freier Helvetica-Klon, URW base35 / AGPL mit Font-Ausnahme)
 ```
 
-## Ablauf
+## Ablauf mit Google Flow (Nano Banana 2)
 
 ```bash
 pip install -r snaps/requirements.txt
-export OPENAI_API_KEY=...          # oder GEMINI_API_KEY / AWS-Credentials (Nova Canvas)
 cd snaps
-python generate.py                 # 1. Fotos (Prompt = style_prefix + scene + style_suffix)
-python snapify.py                  # 2. Look + Caption
-python animate.py                  # 3. Story-Video
+python generate.py --export flow          # 1. Prompts -> flow/PROMPTS.md (zum Kopieren in Flow)
+#    In Flow: Bilder, Modell "Nano Banana 2", Seitenverhältnis 9:16, je Prompt ein Bild, herunterladen
+python import_raw.py <id> <datei>         # 2. Download zuordnen, z. B. import_raw.py 03-delilah ~/Downloads/Flow_....png
+python import_raw.py --list               #    zeigt, welche Snaps noch ein Foto brauchen
+python snapify.py                         # 3. Look + Caption   -> out/<id>.jpg
+python animate.py                         # 4. Story-Video      -> out/story.mp4 + story.html
 ```
 
-`python generate.py 03-delilah --n 4` erzeugt vier Varianten eines Motivs (`raw/03-delilah-2.png` …);
-die gewünschte Variante nach `raw/03-delilah.png` kopieren. `python snapify.py --calibrate` misst die
-Balken-Geometrie der eigenen Ausgabe gegen die Referenzen und legt Vergleichsstreifen in `out/calib-*.png` ab.
+Fünf Downloads auf einmal: `python import_raw.py ~/Downloads/Flow_*.png` ordnet sie nach Downloadzeit
+den fünf Snaps in Reihenfolge zu. Flow-Downloads in 2K/4K sind fein; `snapify.py` schneidet auf 9:16
+zu und skaliert auf 1080×1920.
+
+Alternativ per API (`generate.py`, Backend `nanobanana` mit `GEMINI_API_KEY`, sonst `gemini`, `openai`,
+`bedrock`): `python generate.py 03-delilah --n 4` erzeugt vier Varianten (`raw/03-delilah-2.png` …).
+`python snapify.py --calibrate` misst die Balken-Geometrie der eigenen Ausgabe gegen die Referenzen
+und legt Vergleichsstreifen in `out/calib-*.png` ab.
 
 ## Der Snap-Look (aus den Referenzen vermessen)
 

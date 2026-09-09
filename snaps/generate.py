@@ -4,15 +4,23 @@
 The prompt for a snap is:  style_prefix + scene + style_suffix + suffix_extra
 (exactly the wording that produced the reference photos).
 
-Backends (picked with --backend, default "auto" = first one with a key present):
-  openai   OPENAI_API_KEY               gpt-image-1, 1024x1536 portrait (cropped to 9:16 by snapify)
-  gemini   GEMINI_API_KEY/GOOGLE_API_KEY imagen-4.0-generate-001, aspect 9:16
-  bedrock  AWS credentials (boto3)      amazon.nova-canvas-v1:0, 720x1280
+Two ways to get the photos:
+
+A) Google Flow (labs.google/flow) with Nano Banana 2 — manual, in the browser:
+     python generate.py --export flow          # writes flow/<id>.txt + flow/PROMPTS.md to copy-paste
+   In Flow: Bilder > Modell "Nano Banana 2", Seitenverhältnis 9:16, ein Bild pro Prompt.
+   Then pull the downloads in with import_raw.py (see there).
+
+B) an API (picked with --backend, default "auto" = first one with a key present):
+  nanobanana GEMINI_API_KEY/GOOGLE_API_KEY gemini-3.1-flash-image-preview (Nano Banana 2), 9:16, 2K
+  gemini     GEMINI_API_KEY/GOOGLE_API_KEY imagen-4.0-generate-001, aspect 9:16
+  openai     OPENAI_API_KEY               gpt-image-1, 1024x1536 portrait (cropped to 9:16 by snapify)
+  bedrock    AWS credentials (boto3)      amazon.nova-canvas-v1:0, 720x1280
 
 Usage:
   python generate.py                         # all snaps -> raw/<id>.png
   python generate.py 03-delilah --n 3        # 3 variants of one snap -> raw/03-delilah.png, -2.png, -3.png
-  python generate.py --backend gemini --dry  # only print the prompts
+  python generate.py --dry                   # only print the prompts
 Existing files are skipped unless --force is given.
 """
 from __future__ import annotations
@@ -50,6 +58,24 @@ def gen_openai(prompt: str, seed: int | None) -> bytes:
     return base64.b64decode(r.json()["data"][0]["b64_json"])
 
 
+def gen_nanobanana(prompt: str, seed: int | None) -> bytes:
+    """Nano Banana 2 through the Gemini API (generateContent with an image response)."""
+    key = os.environ.get("GEMINI_API_KEY") or os.environ["GOOGLE_API_KEY"]
+    model = os.environ.get("NANOBANANA_MODEL", "gemini-3.1-flash-image-preview")
+    body = {"contents": [{"parts": [{"text": prompt}]}],
+            "generationConfig": {"responseModalities": ["IMAGE"],
+                                 "imageConfig": {"aspectRatio": "9:16", "imageSize": "2K"}}}
+    if seed is not None:
+        body["generationConfig"]["seed"] = seed
+    r = requests.post(f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent",
+                      headers={"x-goog-api-key": key}, json=body, timeout=300)
+    r.raise_for_status()
+    for part in r.json()["candidates"][0]["content"]["parts"]:
+        if "inlineData" in part:
+            return base64.b64decode(part["inlineData"]["data"])
+    raise RuntimeError("no image in response: " + json.dumps(r.json())[:300])
+
+
 def gen_gemini(prompt: str, seed: int | None) -> bytes:
     key = os.environ.get("GEMINI_API_KEY") or os.environ["GOOGLE_API_KEY"]
     model = os.environ.get("GEMINI_IMAGE_MODEL", "imagen-4.0-generate-001")
@@ -79,6 +105,7 @@ def gen_bedrock(prompt: str, seed: int | None) -> bytes:
 
 
 BACKENDS = {
+    "nanobanana": (gen_nanobanana, lambda: bool(os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY"))),
     "openai": (gen_openai, lambda: bool(os.environ.get("OPENAI_API_KEY"))),
     "gemini": (gen_gemini, lambda: bool(os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY"))),
     "bedrock": (gen_bedrock, lambda: bool(os.environ.get("AWS_ACCESS_KEY_ID") or os.environ.get("AWS_PROFILE"))),
@@ -104,6 +131,8 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--seed", type=int, default=None)
     ap.add_argument("--force", action="store_true", help="overwrite existing raw files")
     ap.add_argument("--dry", action="store_true", help="print prompts only")
+    ap.add_argument("--export", type=Path, default=None, metavar="DIR",
+                    help="write one prompt file per snap plus PROMPTS.md into DIR (for Google Flow)")
     ap.add_argument("--config", type=Path, default=HERE / "snaps.json")
     args = ap.parse_args(argv)
 
@@ -111,6 +140,16 @@ def main(argv: list[str] | None = None) -> int:
     snaps = [s for s in cfg["snaps"] if not args.ids or s["id"] in args.ids]
     if not snaps:
         sys.exit("no matching snaps")
+    if args.export:
+        args.export.mkdir(parents=True, exist_ok=True)
+        md = ["# Prompts für Google Flow (Nano Banana 2, 9:16, 1 Bild pro Prompt)\n",
+              "Heruntergeladene Datei danach zuordnen: `python import_raw.py <id> <datei>`\n"]
+        for s in snaps:
+            (args.export / f"{s['id']}.txt").write_text(full_prompt(cfg, s) + "\n", encoding="utf-8")
+            md.append(f"## {s['id']}  —  Caption: „{s['caption']}“\n\n```\n{full_prompt(cfg, s)}\n```\n")
+        (args.export / "PROMPTS.md").write_text("\n".join(md), encoding="utf-8")
+        print(f"wrote {len(snaps)} prompts to {args.export}/")
+        return 0
     if args.dry:
         for s in snaps:
             print(f"### {s['id']}\n{full_prompt(cfg, s)}\n")
