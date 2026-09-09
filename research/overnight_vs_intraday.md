@@ -136,6 +136,143 @@ Befund:
   dort –98 % war. Bei allen anderen 26 Titeln wäre einfaches Halten besser
   gewesen.
 
+## Kehrseite: schlimmste Nächte und Drawdown der Overnight-Strategie
+
+`python research/overnight_risk.py` für die Titel, bei denen die Nacht die
+bessere Hälfte war.
+
+```
+
+=== MU  2010-01-11 .. 2026-09-08
+  Schlimmste 5 Nächte (Close -> nächster Open):
+    2015-06-26  -15.6%
+    2024-12-19  -13.3%
+    2020-03-16  -13.1%
+    2020-03-09  -11.6%
+    2026-06-23  -10.8%
+  Nächte schlechter als -5%:  40   (Tage intraday schlechter: 122)
+  Nächte schlechter als -10%:   5   (Tage intraday schlechter: 6)
+  Nächte schlechter als -15%:   1   (Tage intraday schlechter: 0)
+  Nächte schlechter als -20%:   0   (Tage intraday schlechter: 0)
+  Max. Drawdown Overnight-Strategie: -54.0%  (Hoch 2021-06-30, Tief 2023-04-05, wieder erholt 2024-06-18)
+  Max. Drawdown Buy&Hold:            -73.8%  (Hoch 2014-12-05, Tief 2016-05-13, wieder erholt 2017-09-27)
+  Längste Serie negativer Nächte: 8
+
+=== TSLA  2010-06-30 .. 2026-09-08
+  Schlimmste 5 Nächte (Close -> nächster Open):
+    2020-09-08  -14.9%
+    2020-03-16  -14.1%
+    2020-03-09  -13.9%
+    2013-11-06  -12.4%
+    2018-09-28  -12.1%
+  Nächte schlechter als -5%:  60   (Tage intraday schlechter: 155)
+  Nächte schlechter als -10%:   9   (Tage intraday schlechter: 14)
+  Nächte schlechter als -15%:   0   (Tage intraday schlechter: 3)
+  Nächte schlechter als -20%:   0   (Tage intraday schlechter: 0)
+  Max. Drawdown Overnight-Strategie: -45.0%  (Hoch 2017-10-02, Tief 2019-05-22, wieder erholt 2020-02-03)
+  Max. Drawdown Buy&Hold:            -73.6%  (Hoch 2021-11-04, Tief 2023-01-03, wieder erholt 2024-12-11)
+  Längste Serie negativer Nächte: 8
+
+=== NVDA  2007-01-04 .. 2026-09-08
+  Schlimmste 5 Nächte (Close -> nächster Open):
+    2008-07-03  -26.8%
+    2018-11-16  -19.4%
+    2019-01-28  -14.9%
+    2024-08-05  -14.2%
+    2008-10-10  -12.5%
+  Nächte schlechter als -5%:  53   (Tage intraday schlechter: 146)
+  Nächte schlechter als -10%:   8   (Tage intraday schlechter: 16)
+  Nächte schlechter als -15%:   2   (Tage intraday schlechter: 0)
+  Nächte schlechter als -20%:   1   (Tage intraday schlechter: 0)
+  Max. Drawdown Overnight-Strategie: -66.7%  (Hoch 2007-12-24, Tief 2009-02-17, wieder erholt 2012-06-07)
+  Max. Drawdown Buy&Hold:            -85.6%  (Hoch 2007-10-17, Tief 2008-11-20, wieder erholt 2016-04-15)
+  Längste Serie negativer Nächte: 10
+
+=== AMD  2015-01-05 .. 2026-09-08
+  Schlimmste 5 Nächte (Close -> nächster Open):
+    2018-10-25  -21.4%
+    2015-07-07  -17.4%
+    2017-05-02  -13.9%
+    2015-04-17  -11.5%
+    2020-03-09  -11.4%
+  Nächte schlechter als -5%:  46   (Tage intraday schlechter: 118)
+  Nächte schlechter als -10%:   7   (Tage intraday schlechter: 5)
+  Nächte schlechter als -15%:   2   (Tage intraday schlechter: 0)
+  Nächte schlechter als -20%:   1   (Tage intraday schlechter: 0)
+  Max. Drawdown Overnight-Strategie: -39.8%  (Hoch 2022-05-17, Tief 2022-10-13, wieder erholt 2024-06-03)
+  Max. Drawdown Buy&Hold:            -65.4%  (Hoch 2021-11-29, Tief 2022-10-14, wieder erholt 2024-01-18)
+  Längste Serie negativer Nächte: 10
+
+=== AMC  2013-12-19 .. 2026-09-08
+  Schlimmste 5 Nächte (Close -> nächster Open):
+    2021-01-28  -39.8%
+    2022-08-22  -37.1%
+    2023-08-14  -36.7%
+    2021-02-02  -28.7%
+    2020-03-12  -26.4%
+  Nächte schlechter als -5%:  70   (Tage intraday schlechter: 278)
+  Nächte schlechter als -10%:  24   (Tage intraday schlechter: 59)
+  Nächte schlechter als -15%:  12   (Tage intraday schlechter: 21)
+  Nächte schlechter als -20%:   9   (Tage intraday schlechter: 8)
+  Max. Drawdown Overnight-Strategie: -84.4%  (Hoch 2021-06-15, Tief 2024-05-09, wieder erholt nie)
+  Max. Drawdown Buy&Hold:            -99.8%  (Hoch 2021-06-02, Tief 2026-03-27, wieder erholt nie)
+  Längste Serie negativer Nächte: 11
+
+=== GME  2007-01-03 .. 2026-09-08
+  Schlimmste 5 Nächte (Close -> nächster Open):
+    2021-02-02  -37.4%
+    2019-06-05  -30.1%
+    2021-01-28  -23.7%
+    2023-06-08  -22.3%
+    2024-05-17  -21.0%
+  Nächte schlechter als -5%:  90   (Tage intraday schlechter: 233)
+  Nächte schlechter als -10%:  31   (Tage intraday schlechter: 50)
+  Nächte schlechter als -15%:  16   (Tage intraday schlechter: 19)
+  Nächte schlechter als -20%:   5   (Tage intraday schlechter: 12)
+  Max. Drawdown Overnight-Strategie: -87.8%  (Hoch 2015-08-10, Tief 2020-03-23, wieder erholt 2021-01-26)
+  Max. Drawdown Buy&Hold:            -93.4%  (Hoch 2007-12-24, Tief 2020-04-03, wieder erholt 2021-01-21)
+  Längste Serie negativer Nächte: 11
+
+=== IWM  2007-01-03 .. 2026-09-08
+  Schlimmste 5 Nächte (Close -> nächster Open):
+    2020-03-16  -9.1%
+    2008-10-24  -8.3%
+    2020-03-12  -7.2%
+    2020-03-09  -7.1%
+    2024-08-05  -5.3%
+  Nächte schlechter als -5%:   6   (Tage intraday schlechter: 12)
+  Nächte schlechter als -10%:   0   (Tage intraday schlechter: 1)
+  Nächte schlechter als -15%:   0   (Tage intraday schlechter: 0)
+  Nächte schlechter als -20%:   0   (Tage intraday schlechter: 0)
+  Max. Drawdown Overnight-Strategie: -29.0%  (Hoch 2008-09-23, Tief 2009-03-02, wieder erholt 2010-05-18)
+  Max. Drawdown Buy&Hold:            -59.3%  (Hoch 2007-07-09, Tief 2009-03-09, wieder erholt 2011-02-14)
+  Längste Serie negativer Nächte: 11
+
+=== META  2012-05-21 .. 2026-09-08
+  Schlimmste 5 Nächte (Close -> nächster Open):
+    2022-10-27  -24.5%
+    2022-02-03  -24.3%
+    2018-07-26  -19.6%
+    2024-04-25  -14.6%
+    2012-07-27  -13.5%
+  Nächte schlechter als -5%:  24   (Tage intraday schlechter: 33)
+  Nächte schlechter als -10%:   9   (Tage intraday schlechter: 0)
+  Nächte schlechter als -15%:   3   (Tage intraday schlechter: 0)
+  Nächte schlechter als -20%:   2   (Tage intraday schlechter: 0)
+  Max. Drawdown Overnight-Strategie: -67.6%  (Hoch 2021-07-28, Tief 2022-10-27, wieder erholt 2025-07-31)
+  Max. Drawdown Buy&Hold:            -76.9%  (Hoch 2021-09-07, Tief 2022-11-03, wieder erholt 2024-01-23)
+  Längste Serie negativer Nächte: 10
+```
+
+Befund: Die Overnight-Strategie schützt nicht vor Gaps. Nächte mit –10 % und
+schlimmer sind bei allen Hype-Titeln normal (Micron 5, Tesla 9, Nvidia 8, Meta
+9, GameStop 31), und die extremsten Einzelverluste der Nacht übertreffen die
+schlimmsten Handelstage bei Nvidia, AMD und Meta deutlich. Der maximale
+Drawdown der Strategie liegt zwischen –29 % (Russell 2000) und –88 %
+(GameStop), bei Micron –54 % mit knapp drei Jahren bis zur Erholung. Der
+einzige durchgängige Vorteil gegenüber Buy-and-Hold: Der Drawdown ist bei
+allen Titeln kleiner, weil man nur die Hälfte der Zeit investiert ist.
+
 ## Bewertung
 
 - Das Phänomen (Overnight-Renditen > Intraday-Renditen im Durchschnitt) ist
