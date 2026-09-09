@@ -12,7 +12,7 @@ Vertical 9:16, full-bleed like a phone screenshot, no text, no caption, no water
 ```
 ## Video-Block (in jedem Video-Prompt identisch, Bild-zu-Video mit dem fertigen Foto)
 ```
-Turn this photo into a 3 second handheld phone video from 2015. Keep this exact frame, colours, softness and grain; it must still look like the same low-quality photo. Only a slight hand shake and drift, no zoom, no pan, no cut, no new objects, no text. Subtle natural motion: [Bewegung der Szene]
+Turn this photo into a 10 second handheld phone video from 2015. Keep this exact frame, colours, softness and grain for the whole clip; it must still look like the same low-quality photo at every moment. The camera is held in one hand: constant slight shake and slow drift, no zoom, no pan, no cut, no new people or objects, no text, nobody leaves or enters except where described. The people stay where they are and behave naturally and continuously for the full 10 seconds, nothing repeats or loops. Subtle natural motion: [Bewegung der Szene]
 ```
 
 **Caption:** nach dem Video als Overlay setzen (CapCut o. ä.): schwarzer Balken über die volle Breite, ca. 62 % Deckkraft, Höhe ≈ 9 % der Bildbreite, weiße Helvetica Regular in Kleinbuchstaben ≈ 4 % der Bildbreite, zentriert, Balkenmitte etwa auf halber Höhe. Nicht ins Bild generieren lassen, das Videomodell verzerrt eingebrannten Text.
@@ -30,7 +30,7 @@ Real candid photo taken on an old iPhone in 2015 by a teenager, later screenshot
 ```
 **Video (Omni Flash 1.1, Bild-zu-Video):**
 ```
-Turn this photo into a 3 second handheld phone video from 2015. Keep this exact frame, colours, softness and grain; it must still look like the same low-quality photo. Only a slight hand shake and drift, no zoom, no pan, no cut, no new objects, no text. Subtle natural motion: the boy blinks and his smile widens, the foam on the mug settles, students walk past in the blurred background, snow falls lightly, a slight breath of steam
+Turn this photo into a 10 second handheld phone video from 2015. Keep this exact frame, colours, softness and grain for the whole clip; it must still look like the same low-quality photo at every moment. The camera is held in one hand: constant slight shake and slow drift, no zoom, no pan, no cut, no new people or objects, no text, nobody leaves or enters except where described. The people stay where they are and behave naturally and continuously for the full 10 seconds, nothing repeats or loops. Subtle natural motion: the boy blinks and his smile widens, the foam on the mug settles, students walk past in the blurred background, snow falls lightly, a slight breath of steam
 ```
 
 ## 02 · hard at work
@@ -42,7 +42,7 @@ Real candid photo taken on an old iPhone in 2015 by a teenager, later screenshot
 ```
 **Video (Omni Flash 1.1, Bild-zu-Video):**
 ```
-Turn this photo into a 3 second handheld phone video from 2015. Keep this exact frame, colours, softness and grain; it must still look like the same low-quality photo. Only a slight hand shake and drift, no zoom, no pan, no cut, no new objects, no text. Subtle natural motion: the blond girl blinks slowly and tilts her head, the dark-haired girl's pen keeps writing, the purple-haired girl's thumb scrolls, a page of parchment lifts slightly
+Turn this photo into a 10 second handheld phone video from 2015. Keep this exact frame, colours, softness and grain for the whole clip; it must still look like the same low-quality photo at every moment. The camera is held in one hand: constant slight shake and slow drift, no zoom, no pan, no cut, no new people or objects, no text, nobody leaves or enters except where described. The people stay where they are and behave naturally and continuously for the full 10 seconds, nothing repeats or loops. Subtle natural motion: the blond girl blinks slowly and tilts her head, the dark-haired girl's pen keeps writing, the purple-haired girl's thumb scrolls, a page of parchment lifts slightly
 ```
 
 ## 03 · delilah
@@ -54,7 +54,7 @@ Real candid photo taken on an old iPhone in 2015 by a teenager, later screenshot
 ```
 **Video (Omni Flash 1.1, Bild-zu-Video):**
 ```
-Turn this photo into a 3 second handheld phone video from 2015. Keep this exact frame, colours, softness and grain; it must still look like the same low-quality photo. Only a slight hand shake and drift, no zoom, no pan, no cut, no new objects, no text. Subtle natural motion: the boy on the right walks on and out of frame, the girl lifts her fork and glances up, heads at the tables move, candle flames flicker
+Turn this photo into a 10 second handheld phone video from 2015. Keep this exact frame, colours, softness and grain for the whole clip; it must still look like the same low-quality photo at every moment. The camera is held in one hand: constant slight shake and slow drift, no zoom, no pan, no cut, no new people or objects, no text, nobody leaves or enters except where described. The people stay where they are and behave naturally and continuously for the full 10 seconds, nothing repeats or loops. Subtle natural motion: the boy on the right walks on and out of frame, the girl lifts her fork and glances up, heads at the tables move, candle flames flicker
 ```
 
 ## 04 · scared
@@ -66,7 +66,7 @@ Real candid photo taken on an old iPhone in 2015 by a teenager, later screenshot
 ```
 **Video (Omni Flash 1.1, Bild-zu-Video):**
 ```
-Turn this photo into a 3 second handheld phone video from 2015. Keep this exact frame, colours, softness and grain; it must still look like the same low-quality photo. Only a slight hand shake and drift, no zoom, no pan, no cut, no new objects, no text. Subtle natural motion: the girl's eyes narrow and slowly rise a little higher over the books, her hair shifts, a student in the background turns a page, the lamp light hums
+Turn this photo into a 10 second handheld phone video from 2015. Keep this exact frame, colours, softness and grain for the whole clip; it must still look like the same low-quality photo at every moment. The camera is held in one hand: constant slight shake and slow drift, no zoom, no pan, no cut, no new people or objects, no text, nobody leaves or enters except where described. The people stay where they are and behave naturally and continuously for the full 10 seconds, nothing repeats or loops. Subtle natural motion: the girl's eyes narrow and slowly rise a little higher over the books, her hair shifts, a student in the background turns a page, the lamp light hums
 ```
 
 ## 05 · quidditch
@@ -78,7 +78,7 @@ Real candid photo taken on an old iPhone in 2015 by a teenager, later screenshot
 ```
 **Video (Omni Flash 1.1, Bild-zu-Video):**
 ```
-Turn this photo into a 3 second handheld phone video from 2015. Keep this exact frame, colours, softness and grain; it must still look like the same low-quality photo. Only a slight hand shake and drift, no zoom, no pan, no cut, no new objects, no text. Subtle natural motion: the flags wave, the distant flying figures cross the sky, the girl's hair moves in the wind, the crowd sways and cheers, the lens flare shifts
+Turn this photo into a 10 second handheld phone video from 2015. Keep this exact frame, colours, softness and grain for the whole clip; it must still look like the same low-quality photo at every moment. The camera is held in one hand: constant slight shake and slow drift, no zoom, no pan, no cut, no new people or objects, no text, nobody leaves or enters except where described. The people stay where they are and behave naturally and continuously for the full 10 seconds, nothing repeats or loops. Subtle natural motion: the flags wave, the distant flying figures cross the sky, the girl's hair moves in the wind, the crowd sways and cheers, the lens flare shifts
 ```
 
 ---
@@ -93,7 +93,7 @@ Real candid photo taken on an old iPhone in 2015 by a teenager, later screenshot
 ```
 **Video (Omni Flash 1.1, Bild-zu-Video):**
 ```
-Turn this photo into a 3 second handheld phone video from 2015. Keep this exact frame, colours, softness and grain; it must still look like the same low-quality photo. Only a slight hand shake and drift, no zoom, no pan, no cut, no new objects, no text. Subtle natural motion: the green foam keeps bubbling over the rim, thin smoke drifts up, the girl leans back with wide eyes, the boy's shoulders shake with laughter
+Turn this photo into a 10 second handheld phone video from 2015. Keep this exact frame, colours, softness and grain for the whole clip; it must still look like the same low-quality photo at every moment. The camera is held in one hand: constant slight shake and slow drift, no zoom, no pan, no cut, no new people or objects, no text, nobody leaves or enters except where described. The people stay where they are and behave naturally and continuously for the full 10 seconds, nothing repeats or loops. Subtle natural motion: the green foam keeps bubbling over the rim, thin smoke drifts up, the girl leans back with wide eyes, the boy's shoulders shake with laughter
 ```
 
 ## 02 · owl post
@@ -105,7 +105,7 @@ Real candid photo taken on an old iPhone in 2015 by a teenager, later screenshot
 ```
 **Video (Omni Flash 1.1, Bild-zu-Video):**
 ```
-Turn this photo into a 3 second handheld phone video from 2015. Keep this exact frame, colours, softness and grain; it must still look like the same low-quality photo. Only a slight hand shake and drift, no zoom, no pan, no cut, no new objects, no text. Subtle natural motion: the owl folds its wings with two slow flaps and turns its head, the toppled goblet rolls half a turn, the boy flinches and laughs
+Turn this photo into a 10 second handheld phone video from 2015. Keep this exact frame, colours, softness and grain for the whole clip; it must still look like the same low-quality photo at every moment. The camera is held in one hand: constant slight shake and slow drift, no zoom, no pan, no cut, no new people or objects, no text, nobody leaves or enters except where described. The people stay where they are and behave naturally and continuously for the full 10 seconds, nothing repeats or loops. Subtle natural motion: the owl folds its wings with two slow flaps and turns its head, the toppled goblet rolls half a turn, the boy flinches and laughs
 ```
 
 ## 03 · train
@@ -117,7 +117,7 @@ Real candid photo taken on an old iPhone in 2015 by a teenager, later screenshot
 ```
 **Video (Omni Flash 1.1, Bild-zu-Video):**
 ```
-Turn this photo into a 3 second handheld phone video from 2015. Keep this exact frame, colours, softness and grain; it must still look like the same low-quality photo. Only a slight hand shake and drift, no zoom, no pan, no cut, no new objects, no text. Subtle natural motion: the landscape slides past the window, the compartment rocks gently, the boy's head slips a little, the girl blinks and shakes her head
+Turn this photo into a 10 second handheld phone video from 2015. Keep this exact frame, colours, softness and grain for the whole clip; it must still look like the same low-quality photo at every moment. The camera is held in one hand: constant slight shake and slow drift, no zoom, no pan, no cut, no new people or objects, no text, nobody leaves or enters except where described. The people stay where they are and behave naturally and continuously for the full 10 seconds, nothing repeats or loops. Subtle natural motion: the landscape slides past the window, the compartment rocks gently, the boy's head slips a little, the girl blinks and shakes her head
 ```
 
 ## 04 · stairs
@@ -129,7 +129,7 @@ Real candid photo taken on an old iPhone in 2015 by a teenager, later screenshot
 ```
 **Video (Omni Flash 1.1, Bild-zu-Video):**
 ```
-Turn this photo into a 3 second handheld phone video from 2015. Keep this exact frame, colours, softness and grain; it must still look like the same low-quality photo. Only a slight hand shake and drift, no zoom, no pan, no cut, no new objects, no text. Subtle natural motion: the staircase keeps turning slowly away, the students sway and grab the banister, the boy throws up his hands
+Turn this photo into a 10 second handheld phone video from 2015. Keep this exact frame, colours, softness and grain for the whole clip; it must still look like the same low-quality photo at every moment. The camera is held in one hand: constant slight shake and slow drift, no zoom, no pan, no cut, no new people or objects, no text, nobody leaves or enters except where described. The people stay where they are and behave naturally and continuously for the full 10 seconds, nothing repeats or loops. Subtle natural motion: the staircase keeps turning slowly away, the students sway and grab the banister, the boy throws up his hands
 ```
 
 ## 05 · greenhouse
@@ -141,7 +141,7 @@ Real candid photo taken on an old iPhone in 2015 by a teenager, later screenshot
 ```
 **Video (Omni Flash 1.1, Bild-zu-Video):**
 ```
-Turn this photo into a 3 second handheld phone video from 2015. Keep this exact frame, colours, softness and grain; it must still look like the same low-quality photo. Only a slight hand shake and drift, no zoom, no pan, no cut, no new objects, no text. Subtle natural motion: the plant wriggles and snaps its mouth twice, the girl pulls it away laughing, the boy waves his bandaged finger at me, condensation runs down the glass
+Turn this photo into a 10 second handheld phone video from 2015. Keep this exact frame, colours, softness and grain for the whole clip; it must still look like the same low-quality photo at every moment. The camera is held in one hand: constant slight shake and slow drift, no zoom, no pan, no cut, no new people or objects, no text, nobody leaves or enters except where described. The people stay where they are and behave naturally and continuously for the full 10 seconds, nothing repeats or loops. Subtle natural motion: the plant wriggles and snaps its mouth twice, the girl pulls it away laughing, the boy waves his bandaged finger at me, condensation runs down the glass
 ```
 
 ## 06 · astronomy tower
@@ -153,7 +153,7 @@ Real candid photo taken on an old iPhone in 2015 by a teenager, later screenshot
 ```
 **Video (Omni Flash 1.1, Bild-zu-Video):**
 ```
-Turn this photo into a 3 second handheld phone video from 2015. Keep this exact frame, colours, softness and grain; it must still look like the same low-quality photo. Only a slight hand shake and drift, no zoom, no pan, no cut, no new objects, no text. Subtle natural motion: the lantern flame flickers, the blanket and hair move in a faint breeze, the boy keeps shushing then grins, the grain shimmers in the dark
+Turn this photo into a 10 second handheld phone video from 2015. Keep this exact frame, colours, softness and grain for the whole clip; it must still look like the same low-quality photo at every moment. The camera is held in one hand: constant slight shake and slow drift, no zoom, no pan, no cut, no new people or objects, no text, nobody leaves or enters except where described. The people stay where they are and behave naturally and continuously for the full 10 seconds, nothing repeats or loops. Subtle natural motion: the lantern flame flickers, the blanket and hair move in a faint breeze, the boy keeps shushing then grins, the grain shimmers in the dark
 ```
 
 ## 07 · detention
@@ -165,7 +165,7 @@ Real candid photo taken on an old iPhone in 2015 by a teenager, later screenshot
 ```
 **Video (Omni Flash 1.1, Bild-zu-Video):**
 ```
-Turn this photo into a 3 second handheld phone video from 2015. Keep this exact frame, colours, softness and grain; it must still look like the same low-quality photo. Only a slight hand shake and drift, no zoom, no pan, no cut, no new objects, no text. Subtle natural motion: the quill scratches slowly across the parchment, the boy sighs and sinks lower, dust floats in the window light, the silhouette turns a page
+Turn this photo into a 10 second handheld phone video from 2015. Keep this exact frame, colours, softness and grain for the whole clip; it must still look like the same low-quality photo at every moment. The camera is held in one hand: constant slight shake and slow drift, no zoom, no pan, no cut, no new people or objects, no text, nobody leaves or enters except where described. The people stay where they are and behave naturally and continuously for the full 10 seconds, nothing repeats or loops. Subtle natural motion: the quill scratches slowly across the parchment, the boy sighs and sinks lower, dust floats in the window light, the silhouette turns a page
 ```
 
 ## 08 · lake
@@ -177,7 +177,7 @@ Real candid photo taken on an old iPhone in 2015 by a teenager, later screenshot
 ```
 **Video (Omni Flash 1.1, Bild-zu-Video):**
 ```
-Turn this photo into a 3 second handheld phone video from 2015. Keep this exact frame, colours, softness and grain; it must still look like the same low-quality photo. Only a slight hand shake and drift, no zoom, no pan, no cut, no new objects, no text. Subtle natural motion: the boat rocks on small waves, the girl wobbles and windmills her arms, the boy pulls one oar, ripples spread, the flare drifts
+Turn this photo into a 10 second handheld phone video from 2015. Keep this exact frame, colours, softness and grain for the whole clip; it must still look like the same low-quality photo at every moment. The camera is held in one hand: constant slight shake and slow drift, no zoom, no pan, no cut, no new people or objects, no text, nobody leaves or enters except where described. The people stay where they are and behave naturally and continuously for the full 10 seconds, nothing repeats or loops. Subtle natural motion: the boat rocks on small waves, the girl wobbles and windmills her arms, the boy pulls one oar, ripples spread, the flare drifts
 ```
 
 ## 09 · common room
@@ -189,7 +189,7 @@ Real candid photo taken on an old iPhone in 2015 by a teenager, later screenshot
 ```
 **Video (Omni Flash 1.1, Bild-zu-Video):**
 ```
-Turn this photo into a 3 second handheld phone video from 2015. Keep this exact frame, colours, softness and grain; it must still look like the same low-quality photo. Only a slight hand shake and drift, no zoom, no pan, no cut, no new objects, no text. Subtle natural motion: the fire flickers and moves light over the chairs, the talking boy gestures wildly, the sleepy boy's head nods and jerks up
+Turn this photo into a 10 second handheld phone video from 2015. Keep this exact frame, colours, softness and grain for the whole clip; it must still look like the same low-quality photo at every moment. The camera is held in one hand: constant slight shake and slow drift, no zoom, no pan, no cut, no new people or objects, no text, nobody leaves or enters except where described. The people stay where they are and behave naturally and continuously for the full 10 seconds, nothing repeats or loops. Subtle natural motion: the fire flickers and moves light over the chairs, the talking boy gestures wildly, the sleepy boy's head nods and jerks up
 ```
 
 ## 10 · after the match
@@ -201,7 +201,7 @@ Real candid photo taken on an old iPhone in 2015 by a teenager, later screenshot
 ```
 **Video (Omni Flash 1.1, Bild-zu-Video):**
 ```
-Turn this photo into a 3 second handheld phone video from 2015. Keep this exact frame, colours, softness and grain; it must still look like the same low-quality photo. Only a slight hand shake and drift, no zoom, no pan, no cut, no new objects, no text. Subtle natural motion: the boy laughs and shifts the broken broom, wipes mud from his cheek, players move in the blurred background, a drop falls from his hair
+Turn this photo into a 10 second handheld phone video from 2015. Keep this exact frame, colours, softness and grain for the whole clip; it must still look like the same low-quality photo at every moment. The camera is held in one hand: constant slight shake and slow drift, no zoom, no pan, no cut, no new people or objects, no text, nobody leaves or enters except where described. The people stay where they are and behave naturally and continuously for the full 10 seconds, nothing repeats or loops. Subtle natural motion: the boy laughs and shifts the broken broom, wipes mud from his cheek, players move in the blurred background, a drop falls from his hair
 ```
 
 ## 11 · duel
@@ -213,7 +213,7 @@ Real candid photo taken on an old iPhone in 2015 by a teenager, later screenshot
 ```
 **Video (Omni Flash 1.1, Bild-zu-Video):**
 ```
-Turn this photo into a 3 second handheld phone video from 2015. Keep this exact frame, colours, softness and grain; it must still look like the same low-quality photo. Only a slight hand shake and drift, no zoom, no pan, no cut, no new objects, no text. Subtle natural motion: sparks burst and fade between the wands, both boys step and shout, the crowd flinches back, the girl's eyes go wide
+Turn this photo into a 10 second handheld phone video from 2015. Keep this exact frame, colours, softness and grain for the whole clip; it must still look like the same low-quality photo at every moment. The camera is held in one hand: constant slight shake and slow drift, no zoom, no pan, no cut, no new people or objects, no text, nobody leaves or enters except where described. The people stay where they are and behave naturally and continuously for the full 10 seconds, nothing repeats or loops. Subtle natural motion: sparks burst and fade between the wands, both boys step and shout, the crowd flinches back, the girl's eyes go wide
 ```
 
 ## 12 · snowball
@@ -225,7 +225,7 @@ Real candid photo taken on an old iPhone in 2015 by a teenager, later screenshot
 ```
 **Video (Omni Flash 1.1, Bild-zu-Video):**
 ```
-Turn this photo into a 3 second handheld phone video from 2015. Keep this exact frame, colours, softness and grain; it must still look like the same low-quality photo. Only a slight hand shake and drift, no zoom, no pan, no cut, no new objects, no text. Subtle natural motion: the snowball flies at the lens and the camera jerks as it hits, snow keeps falling, the girl doubles over laughing, the boy peeks out
+Turn this photo into a 10 second handheld phone video from 2015. Keep this exact frame, colours, softness and grain for the whole clip; it must still look like the same low-quality photo at every moment. The camera is held in one hand: constant slight shake and slow drift, no zoom, no pan, no cut, no new people or objects, no text, nobody leaves or enters except where described. The people stay where they are and behave naturally and continuously for the full 10 seconds, nothing repeats or loops. Subtle natural motion: the snowball flies at the lens and the camera jerks as it hits, snow keeps falling, the girl doubles over laughing, the boy peeks out
 ```
 
 ## 13 · feast
@@ -237,7 +237,7 @@ Real candid photo taken on an old iPhone in 2015 by a teenager, later screenshot
 ```
 **Video (Omni Flash 1.1, Bild-zu-Video):**
 ```
-Turn this photo into a 3 second handheld phone video from 2015. Keep this exact frame, colours, softness and grain; it must still look like the same low-quality photo. Only a slight hand shake and drift, no zoom, no pan, no cut, no new objects, no text. Subtle natural motion: the bat flaps past and out of frame, candles and pumpkins bob gently, the boy peeks out from under his arms, flames flicker
+Turn this photo into a 10 second handheld phone video from 2015. Keep this exact frame, colours, softness and grain for the whole clip; it must still look like the same low-quality photo at every moment. The camera is held in one hand: constant slight shake and slow drift, no zoom, no pan, no cut, no new people or objects, no text, nobody leaves or enters except where described. The people stay where they are and behave naturally and continuously for the full 10 seconds, nothing repeats or loops. Subtle natural motion: the bat flaps past and out of frame, candles and pumpkins bob gently, the boy peeks out from under his arms, flames flicker
 ```
 
 ## 14 · exam
@@ -249,5 +249,5 @@ Real candid photo taken on an old iPhone in 2015 by a teenager, later screenshot
 ```
 **Video (Omni Flash 1.1, Bild-zu-Video):**
 ```
-Turn this photo into a 3 second handheld phone video from 2015. Keep this exact frame, colours, softness and grain; it must still look like the same low-quality photo. Only a slight hand shake and drift, no zoom, no pan, no cut, no new objects, no text. Subtle natural motion: the girl chews the quill and glances to the front, the sleeping boy's back rises and falls, sand trickles in the hourglass, the camera tilts as if hidden under the desk
+Turn this photo into a 10 second handheld phone video from 2015. Keep this exact frame, colours, softness and grain for the whole clip; it must still look like the same low-quality photo at every moment. The camera is held in one hand: constant slight shake and slow drift, no zoom, no pan, no cut, no new people or objects, no text, nobody leaves or enters except where described. The people stay where they are and behave naturally and continuously for the full 10 seconds, nothing repeats or loops. Subtle natural motion: the girl chews the quill and glances to the front, the sleeping boy's back rises and falls, sand trickles in the hourglass, the camera tilts as if hidden under the desk
 ```
