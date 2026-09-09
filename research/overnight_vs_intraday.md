@@ -64,6 +64,78 @@ nur am Tag verdient. Micron hatte 2015, 2018 und 2022 negative oder flache
 Overnight-Jahre. Micron ist zudem ein Paradebeispiel für Selection Bias: Man
 zeigt die Aktie mit dem extremsten Verlauf, nicht eine repräsentative.
 
+## Gegenprobe mit 27 weiteren Titeln
+
+`python research/overnight_screen.py` zerlegt alle CSVs in `research/data/`
+(Mega-Caps, Halbleiter, Blue Chips, Meme-Aktien, Index-ETFs und die im Video
+genannten Länder Italien, Frankreich, Singapur, Thailand als US-ETFs).
+ON = Overnight, ID = Intraday, „5J“ = letzte fünf Jahre, t = t-Statistik der
+Differenz ON minus ID pro Tag.
+
+```
+          ab Buy&Hold Overnight Intraday ON bp/Tag ID bp/Tag t(ON-ID) ON ohne Top1% ON CAGR @5bp B&H CAGR  ON 5J  ID 5J
+Symbol                                                                                                                 
+AAPL    2007  +12448%    +2591%    +366%      +7.5      +4.4     +1.0          +75%          +4%     +28%   -45%  +278%
+AMC     2013     -98%   +31964%    -100%     +31.5     -19.1     +3.3          -92%         +39%     -26%   -66%   -98%
+AMD     2015  +18701%    +6096%    +203%     +16.5      +8.2     +1.2         +299%         +26%     +57%  +288%   +19%
+COIN    2021     -45%      -21%     -31%      +3.3      +7.6     -0.3          -84%         -16%     -11%   -24%   -11%
+EWG     2007    +165%       +9%    +142%      +1.1      +2.4     -0.5          -94%         -11%      +5%   -17%   +55%
+EWI     2007     +40%       +4%     +34%      +1.1      +1.2     -0.1          -91%         -12%      +2%   +17%   +69%
+EWJ     2007    +111%      -64%    +483%      -1.5      +3.9     -2.9          -95%         -16%      +4%   -12%   +57%
+EWQ     2007     +82%      -42%    +212%      -0.3      +2.9     -1.4          -94%         -14%      +3%   -23%   +61%
+EWS     2007    +266%      +24%    +196%      +1.3      +2.6     -0.5          -94%         -11%      +7%   +15%   +37%
+GME     2007    +307%    +1619%     -76%     +12.5      +6.2     +0.7         -100%          +2%      +7%   -56%   -13%
+GOOGL   2015    +915%     +151%    +304%      +4.1      +6.1     -0.5          -52%          -4%     +24%    +1%  +135%
+INTC    2007    +762%      +40%    +517%      +1.9      +5.4     -1.0          -95%         -10%     +12%   +96%    +8%
+IWM     2007    +418%     +793%     -42%      +4.8      -0.3     +2.3          +32%          -1%      +9%   +57%   -14%
+JNJ     2007    +596%     +168%    +160%      +2.2      +2.4     -0.1          -26%          -7%     +10%    -7%   +89%
+JPM     2007   +1102%     +652%     +60%      +4.9      +2.7     +0.7          -60%          -2%     +14%   +56%   +60%
+KO      2007    +529%     +264%     +73%      +2.9      +1.6     +0.7          -27%          -6%     +10%   +69%    +4%
+META    2012   +1514%     +913%     +59%      +8.0      +2.9     +1.2          -63%          +4%     +22%   +14%   +41%
+MSFT    2007   +2209%     +342%    +422%      +3.6      +4.3     -0.3          -64%          -5%     +17%   +46%   +17%
+MU      2010   +9784%   +68683%     -86%     +17.5      -1.5     +4.0        +2062%         +31%     +32%  +519%  +125%
+NFLX    2007  +20103%     +455%   +3539%      +5.7     +10.6     -1.0          -96%          -4%     +32%    +8%   +21%
+NVDA    2007  +40942%   +22503%     +82%     +14.4      +5.3     +1.7         +452%         +20%     +41%  +508%   +63%
+PG      2007    +282%      -28%    +431%      -0.5      +3.9     -2.5          -83%         -13%      +7%   -16%   +35%
+QQQ     2011   +1350%     +579%    +114%      +5.4      +2.5     +1.2          +71%          -0%     +19%   +57%   +22%
+SPY     2007    +787%     +354%     +95%      +3.4      +1.8     +0.9          -22%          -5%     +12%   +37%   +28%
+THD     2008    +117%     +148%     -13%      +2.9      +0.1     +1.2          -78%          -7%      +4%    -5%    +5%
+TSLA    2010  +23055%   +38587%     -40%     +17.0      +3.0     +2.4         +520%         +28%     +40%   +85%   -19%
+XOM     2007    +321%       -1%    +324%      +0.5      +3.9     -1.4          -85%         -12%      +8%   +36%  +153%
+
+Titel mit Overnight > Intraday (gesamt): 16 von 27
+Titel mit Overnight > Intraday (letzte 5 Jahre): 11 von 27
+Titel, bei denen Overnight nach 5 bp Kosten Buy&Hold schlägt: 1 von 27
+Titel mit |t| > 2 für Overnight minus Intraday: 6 von 27
+```
+
+Befund:
+
+- **Kein allgemeines Gesetz.** Overnight schlägt Intraday über den ganzen
+  Zeitraum bei 16 von 27 Titeln, in den letzten fünf Jahren nur bei 11 von 27.
+  Statistisch belastbar (|t| > 2) ist die Differenz bei 6 Titeln, davon 4 in
+  Richtung des Videos (MU, AMC, IWM, TSLA) und 2 dagegen (EWJ, PG).
+- **Das extreme Muster ist ein Retail-Hype-Muster.** Die stärksten
+  Overnight-Ausreißer sind Micron, AMC, GameStop, Tesla, Nvidia und AMD:
+  hohe Aufmerksamkeit, viele Kleinanleger, große Earnings-Gaps. Genau das
+  beschreiben Berkman et al. (2012). Bei AMC lief die Intraday-Kette auf
+  –100 %, die Overnight-Kette auf +31.964 %, und trotzdem hat die Aktie
+  insgesamt 98 % verloren.
+- **Langweilige Titel zeigen es nicht.** Procter & Gamble, Exxon, Intel,
+  Netflix, Microsoft, Alphabet und alle Länder-ETFs haben am Tag mehr
+  verdient als in der Nacht. Bei den Länder-ETFs ist das erwartbar: Sie
+  handeln in US-Zeit, die „Nacht“ des ETF ist der lokale Handelstag in
+  Europa oder Asien. Die Grid-Charts im Video zu Italien, Frankreich,
+  Singapur, Thailand beziehen sich auf lokale Indizes und sind damit nicht
+  vergleichbar, aber die Aussage „gilt weltweit“ ist so nicht überprüfbar.
+- **Ohne die besten 1 % der Nächte kippt fast alles.** Nur bei MU, AMD, NVDA,
+  TSLA, QQQ, IWM und AAPL bleibt die Overnight-Kette dann positiv. Bei 20 von
+  27 Titeln ist sie ohne die Ausreißer-Nächte negativ.
+- **Nach 5 bp Kosten pro Round-Trip schlägt die Overnight-Strategie
+  Buy-and-Hold bei genau einem Titel: AMC.** Und zwar nur, weil Buy-and-Hold
+  dort –98 % war. Bei allen anderen 26 Titeln wäre einfaches Halten besser
+  gewesen.
+
 ## Bewertung
 
 - Das Phänomen (Overnight-Renditen > Intraday-Renditen im Durchschnitt) ist
@@ -72,6 +144,9 @@ zeigt die Aktie mit dem extremsten Verlauf, nicht eine repräsentative.
 - Die Präsentation im Video ist irreführend: kumulierte Prozentzahlen über
   Jahrzehnte, Zuschreibung von Charts zur falschen Studie, keine Kosten, keine
   Steuern, keine Ausreißeranalyse, ein selektiv gewähltes Beispiel.
+- Die Gegenprobe mit 27 weiteren Titeln zeigt: Das Muster ist auf Aktien mit
+  hoher Retail-Aufmerksamkeit und großen Earnings-Gaps beschränkt. Es ist
+  kein Marktgesetz.
 - Als Handelsregel („Day-Trading durch Night-Trading ersetzen“) ist die These
   nicht belegt. Wer den Effekt trotzdem nutzen will, braucht: kostenlose
   Auktionsausführung, ein steuerneutrales Konto, Toleranz für Earnings-Gaps in

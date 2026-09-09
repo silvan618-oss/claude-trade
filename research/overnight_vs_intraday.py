@@ -25,6 +25,8 @@ COST_BPS = (0, 1, 2, 5, 10)  # Kosten pro Round-Trip in Basispunkten
 def load(symbol: str) -> pd.DataFrame:
     df = pd.read_csv(DATA / f"{symbol}.csv").sort_values("date").reset_index(drop=True)
     df = df[["date", "open", "close"]].dropna()
+    # Datenfehler (Open oder Close = 0) verwerfen
+    df = df[(df["open"] > 0) & (df["close"] > 0)]
     # Feiertage sind im Rohdatensatz als exakte Kopie des Vortags enthalten -> entfernen
     dup = (df[["open", "close"]].shift() == df[["open", "close"]]).all(axis=1)
     df = df[~dup].reset_index(drop=True)
