@@ -7,14 +7,16 @@ Der Kameramann („ich") ist in beiden Welten nie zu sehen und spricht nie (Voic
 
 ## Wizarding World — Ich bin Ravenclaw
 
+Häuser nach Charakter: Slytherin Theo + Nova (die beiden Trockenen), Gryffindor Lena (kämpft, auch wenn alles explodiert), Ravenclaw Maja + Cara + ich, Hufflepuff Finn + Ollie (loyal, pechvogelig, Küche um die Ecke).
+
 | Name | Aussehen | Haus | Charakter | Running Gag | Referenz aus |
 |---|---|---|---|---|---|
 | **Theo** | kurze dunkelbraune wuschelige Haare, Sommersprossen, schmales Gesicht | Slytherin (grün-silber) | trocken, überheblich, tut so, als wäre ihm alles egal, mag heimlich alles | wollte erst kein Butterbier, jetzt schuldet er mir eins; sagt „Ich hab's ja gesagt" | Butterbier-Snap (dunkelhaariger Junge) |
-| **Maja** | lange glatte rote Haare, blasse Haut | Gryffindor (rot-gold) | verträumt, faul, „ich denke nach", isst ständig | liegt immer irgendwo herum statt zu arbeiten; klaut Chips | hard at work (links) |
+| **Maja** | lange glatte rote Haare, blasse Haut | Ravenclaw (blau-bronze) | verträumt, faul, „ich denke nach", isst ständig | liegt immer irgendwo herum statt zu arbeiten; klaut Chips | hard at work (links) |
 | **Lena** | langer dunkler Zopf, große Augen | Gryffindor | Streberin, gestresst, macht trotzdem alles kaputt | ihre Zaubertränke explodieren, „es sollte blau sein"; „Schick das niemandem" | hard at work (rechts), potions, train (Mädchen mit Krawatte) |
-| **Nova** | schwarzer Bob mit geradem Pony, dunkle Augen | Ravenclaw (blau-bronze) | sagt fast nichts, starrt, immer am Handy, macht allen Angst | taucht hinter Dingen auf und starrt; „Das war mein Platz" | hard at work (Mitte), library |
+| **Nova** | schwarzer Bob mit geradem Pony, dunkle Augen | Slytherin (grün-silber) | sagt fast nichts, starrt, immer am Handy, macht allen Angst | taucht hinter Dingen auf und starrt; „Das war mein Platz" | hard at work (Mitte), library |
 | **Finn** | braune wuschelige Haare, ständig gequältes Gesicht | Hufflepuff (gelb-schwarz) | Pechvogel, jammert, alles passiert ihm | wird gebissen, verpasst die Treppe, Eule hackt ihn; „Ich hasse diese Schule" | stairs, greenhouse |
-| **Ollie** | rote Locken, rundes Gesicht, grauer Pulli | Gryffindor | schläft überall, isst alles, merkt nichts | schläft mit offenem Mund; „Noch fünf Minuten" | train (schlafender Junge) |
+| **Ollie** | rote Locken, rundes Gesicht, grauer Pulli | Hufflepuff (gelb-schwarz) | schläft überall, isst alles, merkt nichts | schläft mit offenem Mund; „Noch fünf Minuten" | train (schlafender Junge) |
 | **Cara** | dunkle Locken, blauer Strickschal | Ravenclaw | laut, Fan, wettet um alles | Butterbier-Wetten bei jedem Spiel; „Alle schulden mir ein Butterbier" | quidditch (Mädchen vorne) |
 
 ## Pokémon-Welt — Ich bin Trainer ohne Pokémon (noch)
