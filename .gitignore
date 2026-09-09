@@ -4,3 +4,9 @@ __pycache__/
 .pytest_cache/
 .venv/
 venv/
+
+# snaps pipeline outputs
+snaps/raw/*
+snaps/out/*
+!snaps/raw/.gitkeep
+!snaps/out/.gitkeep

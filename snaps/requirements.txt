@@ -1,0 +1,7 @@
+pillow>=10
+numpy>=1.26
+requests>=2.31
+imageio>=2.34
+imageio-ffmpeg>=0.5
+# optional, only for the Bedrock backend:
+# boto3>=1.34
