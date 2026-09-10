@@ -3,6 +3,10 @@
 Wenn der Nutzer sagt „ich brauch wieder neue Videos": **9 neue Clips für Wizarding World + 9 für Pokémon**,
 als Artefakt-Seite wie `prompts/batch-01.html` (Vorlage: `prompts/batch-01.py`, gleiche Templates).
 
+**Zwei Schritte, immer:** Schritt 1 liefert nur die Bild-Prompts (Startframes). Der Nutzer schickt die fertigen
+Bilder mit Clip-Nummer zurück. Schritt 2: Video-Prompts werden erst dann geschrieben, exakt auf das, was im Bild ist
+(Blickrichtung, Haltung, wer wo steht). Video-Prompts vor dem Bild sind nur Entwurf.
+
 Regeln für jeden Clip:
 - **Bild-Prompt** (Nano Banana 2, 9:16): beginnt mit „Use the attached reference snaps as the style template …",
   Snap-Look (unscharf, verrauscht, JPEG), Caption-Balken im Bild, Figuren als **@Name** (Theo, Maja, Lena, Nova,
