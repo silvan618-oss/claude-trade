@@ -14,6 +14,9 @@ Regeln für jeden Clip:
 - **Video-Prompt** (Omni Flash 1.1, 10 s, Startframe = Bild): Aufbau des funktionierenden Butterbier-Videos,
   Kameramann stumm, Leute interagieren miteinander. **Sprache: Wizarding World auf Englisch (britischer Akzent), Pokémon auf Deutsch.**, Caption-Balken bleibt als Overlay,
   kein „keep static / no zoom / subtle only".
+- **Voiceover-Lücken:** Die Szene wird geplant, als würde der Kamerahalter mitreden. Seine Sätze stehen NICHT im
+  Prompt, stattdessen Pausen von 2–3 Sekunden, in denen die anderen in die Kamera schauen und zuhören, und ihre
+  Antworten beziehen sich auf das, was er gesagt hätte ("Genau.", "Hast du gehört?"). Gilt für beide Welten.
 - Originalfiguren (Snape, McGonagall, Hagrid …) nur beschrieben, nie beim Namen, und erst im Video ins Bild.
 - Running Gags aus `CHARACTERS.md` weiterführen.
 
