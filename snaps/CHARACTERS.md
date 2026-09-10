@@ -24,7 +24,7 @@ Häuser nach Charakter: Slytherin Theo + Nova (die beiden Trockenen), Gryffindor
 | Name | Aussehen | Pokémon | Charakter | Running Gag | Referenz aus |
 |---|---|---|---|---|---|
 | **Jonas** | rote Cap verkehrt herum, grüner Hoodie, dunkle Haare | Glumanda **„Rudi"** | tiefenentspannt, egal was brennt; „Ich weiß." | Rudi fackelt Möbel ab; Jonas sitzt auf allem, auch auf Relaxo | couch on fire, day 2 of waiting |
-| **Emma** | blonder Pferdeschwanz, Jeansjacke, bunter Rucksack | Pikachu **„Bo"** | schnell genervt, laut, redet mit Bo wie mit einem Kind | Bo klaut jedes Essen; „Das war mein Essen" | he steals everything |
+| **Nele** (früher Emma, umbenannt weil der Name Emma Watson-Gesichter erzeugt) | blonder Pferdeschwanz, Jeansjacke, bunter Rucksack | Pikachu **„Bo"** | schnell genervt, laut, redet mit Bo wie mit einem Kind | Bo klaut jedes Essen; „Das war mein Essen" | he steals everything |
 | **Lukas** | grauer Hoodie, Kapuze immer auf, schläft | Enton **„Herbert"** | schläft in jedem Fahrzeug, wacht nur für Essen auf | Herbert hält sich den Kopf, Gefahr einer Explosion; „Sind wir da?" | 3 hours of this (Schläfer) |
 | **Mira** | lange braune Haare, rote Mütze oder Kapuze, toter Blick | keins, will keins | trocken, kommentiert alles mit einem Satz, nie beeindruckt | starrt in die Kamera ohne Miene; „Zwei Stunden." | 3 hours of this (Mädchen), 2 hours for THIS (Mädchen) |
 | **Sam** | nasse braune Haare, Regenjacke, immer begeistert | Karpador (immer wieder ein neues) | Optimist, freut sich über alles, verliert alles | angelt nur Karpador und verliert sie; „Guck dir mal die Größe an!" | 2 hours for THIS (Junge), he steals everything (Mütze) |

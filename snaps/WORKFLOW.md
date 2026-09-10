@@ -10,7 +10,7 @@ Bilder mit Clip-Nummer zurück. Schritt 2: Video-Prompts werden erst dann geschr
 Regeln für jeden Clip:
 - **Bild-Prompt** (Nano Banana 2, 9:16): beginnt mit „Use the attached reference snaps as the style template …",
   Snap-Look (unscharf, verrauscht, JPEG), Caption-Balken im Bild, Figuren als **@Name** (Theo, Maja, Lena, Nova,
-  Finn, Ollie, Cara / Jonas, Emma, Lukas, Mira, Sam, Yuna). Keine Schauspielergesichter im Startframe.
+  Finn, Ollie, Cara / Jonas, Nele, Lukas, Mira, Sam, Yuna). Keine Schauspielergesichter im Startframe.
 - **Video-Prompt** (Omni Flash 1.1, 10 s, Startframe = Bild): Aufbau des funktionierenden Butterbier-Videos,
   Kameramann stumm, Leute interagieren miteinander. **Sprache: Wizarding World auf Englisch (britischer Akzent), Pokémon auf Deutsch.**, Caption-Balken bleibt als Overlay,
   kein „keep static / no zoom / subtle only".
