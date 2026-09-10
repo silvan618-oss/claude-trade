@@ -8,7 +8,7 @@ Regeln für jeden Clip:
   Snap-Look (unscharf, verrauscht, JPEG), Caption-Balken im Bild, Figuren als **@Name** (Theo, Maja, Lena, Nova,
   Finn, Ollie, Cara / Jonas, Emma, Lukas, Mira, Sam, Yuna). Keine Schauspielergesichter im Startframe.
 - **Video-Prompt** (Omni Flash 1.1, 10 s, Startframe = Bild): Aufbau des funktionierenden Butterbier-Videos,
-  Kameramann stumm, Dialog auf Deutsch, Leute interagieren miteinander, Caption-Balken bleibt als Overlay,
+  Kameramann stumm, Leute interagieren miteinander. **Sprache: Wizarding World auf Englisch (britischer Akzent), Pokémon auf Deutsch.**, Caption-Balken bleibt als Overlay,
   kein „keep static / no zoom / subtle only".
 - Originalfiguren (Snape, McGonagall, Hagrid …) nur beschrieben, nie beim Namen, und erst im Video ins Bild.
 - Running Gags aus `CHARACTERS.md` weiterführen.
