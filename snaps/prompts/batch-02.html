@@ -66,7 +66,7 @@ DATA.forEach((w,i)=>{
  sec.innerHTML=`<div class="topbox"><button class="btn" data-all="${w.key}">Alle ${w.clips.length} Startframes kopieren (mit Anleitung)</button><p>Batch 02: zwei Videos à 9 Clips, nur Bild-Prompts. Bilder erzeugen, mir mit Clip-Nummer schicken, dann kommen die Video-Prompts.</p></div>
  <ol class="clips">${w.clips.map(c=>`<li class="clip"><div class="clip-head"><span class="num">${c.note.replace('Video ','V')}·${String(c.n).padStart(2,'0')}</span><span class="cap">${esc(c.title)}</span></div>
  <div class="meta"><span>Anhängen:</span>${c.attach.split(',').map(a=>`<span class="chip">@${esc(a.trim())}</span>`).join('')}</div>
- <div class="block"><div class="block-h"><span class="lab">Bild / Startframe</span><button class="mini" data-copy="img" data-w="${w.key}" data-n="${c.n}">Kopieren</button></div><pre>${esc(c.img)}</pre><button class="more">Ganzen Prompt anzeigen</button></div><pre>${esc(c.vid)}</pre><button class="more">Ganzen Prompt anzeigen</button></div>
+ <div class="block"><div class="block-h"><span class="lab">Bild / Startframe</span><button class="mini" data-copy="img" data-w="${w.key}" data-n="${c.n}">Kopieren</button></div><pre>${esc(c.img)}</pre><button class="more">Ganzen Prompt anzeigen</button></div>
  </li>`).join('')}</ol>`;
  host.appendChild(sec);
 });

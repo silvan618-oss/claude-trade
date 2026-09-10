@@ -60,7 +60,7 @@ assert 'SCHRITT 2 – VIDEO' not in h
 h=h.replace('<button class="btn" data-all="${w.key}">Alle ${w.clips.length} Clips kopieren (mit Anleitung)</button><p>Ein Text für Flow: Anleitung oben (Referenz-Snaps als Stilvorlage, Figuren per @Name), dann je Clip Schritt 1 (Startframe mit Nano Banana 2) und Schritt 2 (Video mit Omni Flash 1.1, Startframe aus Schritt 1).</p>',
  '<button class="btn" data-all="${w.key}">Alle ${w.clips.length} Startframes kopieren (mit Anleitung)</button><p>Batch 02: zwei Videos à 9 Clips, nur Bild-Prompts. Bilder erzeugen, mir mit Clip-Nummer schicken, dann kommen die Video-Prompts.</p>')
 # Video-Block aus der Karte entfernen
-h=re.sub(r'\s*<div class="block"><div class="block-h"><span class="lab">Schritt 2 · Video \(10 s\)</span>.*?</button></div>', '', h, flags=re.S)
+h=re.sub(r'\s*<div class="block"><div class="block-h"><span class="lab">Schritt 2 · Video \(10 s\)</span>.*?<button class="more">Ganzen Prompt anzeigen</button></div>', '', h, flags=re.S)
 h=h.replace('<span class="lab">Schritt 1 · Bild / Startframe</span>','<span class="lab">Bild / Startframe</span>')
 h=h.replace('<button class="mini primary" data-copy="both" data-w="${w.key}" data-n="${c.n}">Clip komplett kopieren (Schritt 1 + 2)</button>','')
 h=h.replace("<div class=\"clip-head\"><span class=\"num\">${String(c.n).padStart(2,'0')}</span>","<div class=\"clip-head\"><span class=\"num\">${c.note.replace('Video ','V')}·${String(c.n).padStart(2,'0')}</span>")
