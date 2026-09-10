@@ -17,6 +17,9 @@ Regeln für jeden Clip:
 - **Voiceover-Lücken:** Die Szene wird geplant, als würde der Kamerahalter mitreden. Seine Sätze stehen NICHT im
   Prompt, stattdessen Pausen von 2–3 Sekunden, in denen die anderen in die Kamera schauen und zuhören, und ihre
   Antworten beziehen sich auf das, was er gesagt hätte ("Genau.", "Hast du gehört?"). Gilt für beide Welten.
+- **Sprecher-Zuordnung (Pokémon):** Pokémon sprechen nie menschliche Sätze, nur Laute ("gen-gar", "psy"); Satz im
+  Prompt: "never speaks human words, its mouth never moves to any sentence". Jeder Satz wird an eine SICHTBARE Person
+  gebunden ("turns to the camera, says with his lips moving"). Keine Stimmen aus dem Off, sonst spricht das Pokémon.
 - Originalfiguren (Snape, McGonagall, Hagrid …) nur beschrieben, nie beim Namen, und erst im Video ins Bild.
 - Running Gags aus `CHARACTERS.md` weiterführen.
 
