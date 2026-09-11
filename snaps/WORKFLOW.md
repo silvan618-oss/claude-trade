@@ -7,6 +7,12 @@ als Artefakt-Seite wie `prompts/batch-01.html` (Vorlage: `prompts/batch-01.py`, 
 Bilder mit Clip-Nummer zurück. Schritt 2: Video-Prompts werden erst dann geschrieben, exakt auf das, was im Bild ist
 (Blickrichtung, Haltung, wer wo steht). Video-Prompts vor dem Bild sind nur Entwurf.
 
+**Hook-Regel (seit 11.09.):** Jedes Video bekommt einen Clip 0 als Hook. Wizarding World: eine bekannte Figur
+(Snape, Hermine, Draco, Luna, McGonagall, Hagrid …) steht bereits im STARTBILD, groß, nah, Blick in die Kamera.
+Pokémon: ein ikonisches Pokémon (Pikachu, Glumanda, Garados, Gengar …) füllt das erste Bild. Erkennbare
+Schauspielergesichter sind laut Nutzer erlaubt. Danach die neun normalen Snaps. Grund: Video 1 mit Draco im ersten
+Frame 500k Views, alle anderen bei 5k gedeckelt.
+
 Regeln für jeden Clip:
 - **Bild-Prompt** (Nano Banana 2, 9:16): beginnt mit „Use the attached reference snaps as the style template …",
   Snap-Look (unscharf, verrauscht, JPEG), Caption-Balken im Bild, Figuren als **@Name** (Theo, Maja, Lena, Nova,
