@@ -2,8 +2,8 @@
 
 "if the marauders had snapchat". 9 Snaps pro Folge, Voiceover vom Kamerahalter,
 Text-zu-Video ohne Startframe, Stil-Referenz plus @-Charaktere pro Clip.
-Kamerahalter: ein namenloser fünfter Gryffindor aus dem Schlafsaal (damit Lily
-und Snape im Bild sein können). Dialoge Englisch, britischer Akzent.
+Kamerahalter: ich selbst, als wäre ich immer dabei gewesen. Alle anderen treten
+normal auf, ich bin nur hinter der Kamera und spreche im Voiceover. Dialoge Englisch, britischer Akzent.
 
 Referenzen vorhanden: @James, @Sirius, @Remus, @Lily, @Snape.
 Peter hat keine Referenz und wird beschrieben: kurz, rundlich, dünnes
