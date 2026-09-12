@@ -42,13 +42,33 @@ V=[
  "@prongs and @padfoot",
  "The tower dormitory at night, all four boys crowded on the floor around a big parchment map spread open, its folds opening by themselves, thin ink lines drawing corridors and tiny labelled dots moving along them. @prongs, @padfoot, @moony and "+PETER+" all lean over it with their faces lit from below by a candle. For the first two seconds nobody says anything, they just watch the tiny dots move, as if they heard me and can't answer. Then James looks up at the camera with a huge grin, lips moving: \"Every single person. Every floor. Look, that's Filch.\" He listens for two seconds as if I'm answering. Sirius points at a dot in the corner of the map, looks at the camera and says: \"And that's Peter's dot. In the bathroom. Ten minutes ago.\" Peter mumbles that he had to go. James taps the map with his wand and says to the camera: \"Mischief managed.\" The ink lines drain away until the parchment is blank again, and all four boys fall back onto the floor whooping. Two seconds pass with Sirius lying on the floor laughing and Remus folding the map carefully."),
 ]
-clips=[dict(n=i,title=t,attach=a,note="Folge 1",img=S.format(audio=au,speakers=sp,scene=sc)) for i,(t,a,au,sp,sc) in enumerate(V,1)]
+
+NAMES=[('prongs','James'),('padfoot','Sirius'),('moony','Remus'),('evans','Lily'),('snivellus','Snape')]
+def refnames(text):
+    """Outside dialogue quotes: use the reference name only. First mention '@PRONGS', afterwards 'Prongs'."""
+    parts=text.split('"')            # even indexes = narration, odd = spoken lines
+    seen=set()
+    for i in range(0,len(parts),2):
+        p=parts[i]
+        for ref,real in NAMES:
+            p=p.replace('@'+ref, real)          # normalise to the real name first
+            p=re.sub(r'\b'+real+r"(?='s\b|\b)", '\x00'+ref, p)   # mark every narration mention
+        out=''
+        for tok in re.split(r'(\x00[a-z]+)', p):
+            if tok.startswith('\x00'):
+                ref=tok[1:]
+                if ref in seen: out+=ref.capitalize()
+                else: seen.add(ref); out+='@'+ref.upper()
+            else: out+=tok
+        parts[i]=out
+    return '"'.join(parts)
+clips=[dict(n=i,title=t,attach=a.replace('@prongs','@PRONGS').replace('@padfoot','@PADFOOT').replace('@moony','@MOONY').replace('@evans','@EVANS'),note="Folge 1",img=refnames(S.format(audio=au,speakers=sp,scene=sc))) for i,(t,a,au,sp,sc) in enumerate(V,1)]
 WORLDS=[dict(key="mar",name="Marauders",clips=clips)]
 d=json.dumps(WORLDS,ensure_ascii=False).replace('</','<\\/')
 h=open('/home/user/claude-trade/snaps/prompts/batch-02-hp-videos.html',encoding='utf-8').read()
 h=h.replace('<title>Wizarding Videos 02</title>','<title>Marauders Folge 1</title>')
 h=re.sub(r"const DATA = .*?;\nconst INSTR", lambda m:"const DATA = "+d+";\nconst INSTR", h, flags=re.S)
-h=re.sub(r"const INSTR = \(name\)=>`.*?`;", lambda m: "const INSTR = (name)=>`ANLEITUNG FÜR FLOW – MARAUDERS, FOLGE 1: DIE KARTE (9 CLIPS)\n10 Sekunden pro Clip, 9:16, Text-zu-Video ohne Startframe, in dieser Reihenfolge. Pro Clip die Stil-Referenz und die genannten Charaktere als @-Referenzen anhängen. Peter hat in Flow keine Referenz und ist im Prompt beschrieben.\nAlle Dialoge auf Englisch mit britischem Akzent. Der Kamerahalter spricht nie. Jeder Satz gehört zu der sichtbaren Person, die im Prompt genannt ist, mit sichtbar bewegtem Mund. Kein Caption-Balken, Text kommt später im Schnitt.\n`;", h, flags=re.S)
+h=re.sub(r"const INSTR = \(name\)=>`.*?`;", lambda m: "const INSTR = (name)=>`ANLEITUNG FÜR FLOW – MARAUDERS, FOLGE 1: DIE KARTE (9 CLIPS)\n10 Sekunden pro Clip, 9:16, Text-zu-Video ohne Startframe, in dieser Reihenfolge. Pro Clip die Stil-Referenz und die genannten Charaktere anhängen. Jede Referenz steht im Prompt genau einmal als @NAME in Großbuchstaben (beim ersten Auftreten), danach nur noch als Name. Peter hat in Flow keine Referenz und ist im Prompt beschrieben.\nAlle Dialoge auf Englisch mit britischem Akzent. Der Kamerahalter spricht nie. Jeder Satz gehört zu der sichtbaren Person, die im Prompt genannt ist, mit sichtbar bewegtem Mund. Kein Caption-Balken, Text kommt später im Schnitt.\n`;", h, flags=re.S)
 h=h.replace('Wizarding World Batch 02, alle 18 Video-Prompts. Startframe ist jeweils das fertige Bild mit derselben Caption.','Marauders, Folge 1: sie bauen die Karte. 9 Clips ohne Startframe, ohne Caption-Balken. Die Caption oben ist nur der Titel für deinen Schnitt. Unter jedem Clip steht, was anzuhängen ist.')
 open('marauders-01.html','w',encoding='utf-8').write(h)
 print(len(clips))
