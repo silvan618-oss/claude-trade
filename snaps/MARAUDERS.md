@@ -5,7 +5,7 @@ Text-zu-Video ohne Startframe, Stil-Referenz plus @-Charaktere pro Clip.
 Kamerahalter: ich selbst, als wäre ich immer dabei gewesen. Alle anderen treten
 normal auf, ich bin nur hinter der Kamera und spreche im Voiceover. Dialoge Englisch, britischer Akzent.
 
-Referenzen vorhanden: @James, @Sirius, @Remus, @Lily, @Snape.
+Referenzen in Flow: @prongs (James), @padfoot (Sirius), @moony (Remus), @evans (Lily), @snivellus (Snape). Flow akzeptiert kein Peter-Bild.
 Peter hat keine Referenz und wird beschrieben: kurz, rundlich, dünnes
 mausblondes Haar, kleine wässrige Augen, spitze Nase, nervöses Lächeln.
 
