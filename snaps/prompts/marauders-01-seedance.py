@@ -1,6 +1,6 @@
 import json, re
 PETER="Peter"
-DESC={'James': 'James, the tall thin boy with untidy jet-black hair sticking up at the back and round glasses', 'Sirius': 'Sirius, the handsome boy with long dark wavy hair down to his shoulders and grey eyes', 'Remus': 'Remus, the tall thin boy with light brown hair, a tired face and a few pale scars', 'Peter': 'Peter, the short chubby boy with thin mousy fair hair, small watery eyes and a pointed nose', 'Lily': 'Lily, the girl with long dark red hair and bright green eyes'}
+DESC={'James': 'James, the tall thin boy with untidy jet-black hair sticking up at the back and round glasses', 'Sirius': 'Sirius, the pale boy with dark brown hair down to his jaw, heavy dark eyebrows and a few faint scars on his face', 'Remus': 'Remus, the boy with short dark blond hair parted at the side, a tired friendly face and thin pale scars across his cheek', 'Peter': 'Peter, the short chubby boy with straight fair blond hair, a round face, bulging pale eyes and full cheeks', 'Lily': 'Lily, the girl with long wavy auburn red hair, pale skin and light green-grey eyes'}
 def who(sc):
     names=[n for n in DESC if re.search(r"\b"+n+r"\b",sc)]
     return "; ".join(DESC[n] for n in names)
