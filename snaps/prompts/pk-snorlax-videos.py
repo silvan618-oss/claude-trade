@@ -1,4 +1,5 @@
 import json, re
+from describe import describe
 Q="2015 smartphone video quality: soft focus, visible noise and slight compression, motion blur, uneven handheld framing that shakes in my hand, people cut off at the edges, no flash, no filter, audio like a phone microphone with "
 N="The person holding the camera never speaks and makes no sound. "
 L="All dialogue is spoken in casual, natural German. The Snapchat caption bar with the white text in the photo stays exactly as it is on screen for the whole video, like a fixed overlay. "
@@ -32,13 +33,21 @@ V=[
 "Candid first-person video from my own eye level, as if I just raised my old iPhone on the path and hit record. "+Q+"birds, a snore, a bucket tipping over and a fish flopping in wet grass. "+N+SN+"The Magikarp never speaks, it only flops and splashes. The only person who speaks is @SAM, and he turns his face to the camera before speaking so his lips are visible moving with every word. "+L+
 "A dirt path between green fields under a clear morning sky. The huge Snorlax lies on its back across the path, snoring. @SAM, a dark-haired boy in a black jacket, crouches beside its belly holding out a red apple with a friendly smile, while behind him a plastic bucket has just tipped over and a Magikarp is jumping out of it in a splash of water. For the first two seconds @SAM keeps holding the apple toward the Snorlax's face and the Magikarp lands in the grass and flops, as if he heard me. Then @SAM looks at the camera and says with lips moving: \"Ich rede einfach nett mit ihm. Das funktioniert immer.\" He listens for two seconds as if I'm answering, then turns back to the Snorlax and says softly: \"Hey, Großer. Willst du vielleicht aufstehen?\" The Snorlax rolls half over in its sleep, its arm flops onto the path right next to him, and @SAM scrambles backwards and grabs the flopping Magikarp with both hands. He looks at the camera holding the wet fish and says: \"Okay. Es hat gefühlt funktioniert.\" Two seconds pass while he puts the Magikarp back into the bucket and sets it upright. Clear morning light. Vertical 9:16. No watermark, no visible phone or camera."),
 ]
-clips=[dict(n=n,title=t,attach="Startframe = Bild "+str(n)+", Referenzen: "+a,note="Relaxo",img=v) for (n,t,a,v) in sorted(V)]
+PK={"JONAS":("the boy in the green hoodie and red backwards cap","the boy in the green hoodie's"),
+"NELE":("the blonde girl with the ponytail and denim jacket","the blonde girl's"),
+"LUKAS":("the boy in the dark blazer","the boy in the dark blazer's"),
+"MIRA":("the girl in the red beanie and dark rain jacket","the girl in the red beanie's"),
+"YUNA":("the girl in the yellow raincoat","the girl in the yellow raincoat's"),
+"SAM":("the red-haired boy in the school blazer","the red-haired boy's")}
+OVR={5:{"SAM":("the dark-haired boy in the black jacket","the dark-haired boy's")},
+     7:{"MIRA":("the girl with long brown hair in the grey top","the brown-haired girl's")}}
+clips=[dict(n=n,title=t,attach="Startframe = Bild "+str(n)+" („"+t+"“), keine Referenzen, Personen beschrieben",note="Relaxo",img=describe(v,{**PK,**OVR.get(n,{})})) for (n,t,a,v) in sorted(V)]
 WORLDS=[dict(key="pk",name="Pokémon Relaxo Videos",clips=clips)]
 d=json.dumps(WORLDS,ensure_ascii=False).replace('</','<\\/')
 h=open('/home/user/claude-trade/snaps/prompts/batch-02-hp-videos.html',encoding='utf-8').read()
 h=h.replace('<title>Wizarding Videos 02</title>','<title>Pokémon Relaxo Videos</title>')
 h=re.sub(r"const DATA = .*?;\nconst INSTR", lambda m:"const DATA = "+d+";\nconst INSTR", h, flags=re.S)
-h=re.sub(r"const INSTR = \(name\)=>`.*?`;", lambda m: "const INSTR = (name)=>`ANLEITUNG FÜR FLOW – POKÉMON, RELAXO-VIDEO, VIDEO-PROMPTS\nOmni Flash 1.1, 10 Sekunden, 9:16. Für jeden Clip das Startframe-Bild mit derselben Caption nehmen, die genannten Referenzen anhängen und den VIDEO-Prompt eingeben.\nAlle Dialoge auf Deutsch. Der Kamerahalter spricht nie. Pokémon machen nur Laute und sprechen nie menschliche Wörter. Jeder Satz gehört zu der sichtbaren Person, die im Prompt genannt ist, mit sichtbar bewegtem Mund. Personen stehen bei jeder Erwähnung als @NAME.\n`;", h, flags=re.S)
+h=re.sub(r"const INSTR = \(name\)=>`.*?`;", lambda m: "const INSTR = (name)=>`ANLEITUNG FÜR FLOW – POKÉMON, RELAXO-VIDEO, VIDEO-PROMPTS\nOmni Flash 1.1, 10 Sekunden, 9:16. Für jeden Clip das Startframe-Bild mit derselben Caption nehmen, die genannten Referenzen anhängen und den VIDEO-Prompt eingeben.\nAlle Dialoge auf Deutsch. Der Kamerahalter spricht nie. Pokémon machen nur Laute und sprechen nie menschliche Wörter. Jeder Satz gehört zu der sichtbaren Person, die im Prompt genannt ist, mit sichtbar bewegtem Mund. Keine @-Referenzen: alle Personen sind so beschrieben, wie sie auf dem Startframe aussehen.\n`;", h, flags=re.S)
 h=h.replace('Wizarding World Batch 02, alle 18 Video-Prompts. Startframe ist jeweils das fertige Bild mit derselben Caption.','Pokémon Relaxo-Video: Video-Prompts zu den fertigen Startframes, nummeriert wie die Reihenfolge im Video. Alle 9 Clips komplett.')
 h=h.replace("${c.note.replace('Video ','V')}·${String(c.n).padStart(2,'0')}","Clip ${String(c.n).padStart(2,'0')}")
 open('pk-snorlax-videos.html','w',encoding='utf-8').write(h)
