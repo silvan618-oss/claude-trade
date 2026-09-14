@@ -1,0 +1,33 @@
+import json, re
+S=("Exact same style as the start image: same image quality, same kind of random bad phone video, just as soft and noisy. Candid first-person video from my own eye level, handheld and a bit shaky, people cut off at the edges. Not a film still, not a studio, not a DSLR. Audio like a phone microphone with {audio}. "
+"The person holding the camera never speaks. {speak} All dialogue in English with British accents, short and casual. "
+"The Snapchat caption bar with the white text in the picture stays exactly as it is for the whole video, like a fixed overlay. No phone in the picture. "
+"{scene} Vertical 9:16.")
+V=[
+(1,"hermione is in two places","the chatter of a big hall, cutlery and chewing",
+ "Only Ron Weasley and Hermione Granger speak, each looks at the camera when speaking so their lips are visible moving.",
+ "Great Hall at breakfast. Hermione Granger eats cereal and reads a thick book propped against the jug, Ron Weasley next to her chews and glances over. My toast blurred in the foreground. For the first two seconds nothing happens, she reads, he chews. Then Ron looks at the camera and says, mouth half full: \"What. She's reading.\" He listens for two seconds as if I'm answering, and shrugs. Hermione says without looking up: \"Pass the milk.\" Ron slides the jug across. Far in the background, small and out of focus, the same girl with the same bushy hair and the same book under her arm walks past behind the tables and disappears. Nobody at our table notices. Ron says to her: \"Are you coming to Herbology or...\" She says \"Mm.\" Two seconds of her reading and him buttering toast."),
+(2,"ron is not okay","an echoing stone hall, footsteps and students talking",
+ "Only Ron Weasley and Harry Potter speak, each looks at the camera when speaking so their lips are visible moving.",
+ "A stone hall with tall windows and two wooden doors side by side. Ron Weasley, eyes wide, points back at the doors, Harry Potter stands next to him with his hands in his pockets, students walk past blurred. The back of someone's head blurred in the foreground. For the first two seconds Ron keeps pointing from one door to the other. Then he looks at the camera and says: \"No, listen. She went in there.\" He listens for two seconds as if I'm answering. Harry looks at the camera and says: \"Okay.\" Ron: \"And then she came out of there.\" Harry: \"Ron. We've got Charms.\" and walks off. Ron looks at the doors once more and follows him. Two seconds of the two walking away, Ron looking back over his shoulder."),
+(3,"she says it's the light","library silence, a quill scratching and whispering",
+ "Only Hermione Granger and Ron Weasley speak, each looks at the camera when speaking so their lips are visible moving.",
+ "The library, dark shelves, green lamps. Hermione Granger writes on a parchment behind a stack of books, Ron Weasley sits next to her with his chin on his fists staring at her. My open book blurred in the foreground. For the first two seconds she writes and he stares. Then Ron looks at the camera and whispers: \"Ask her.\" He listens for two seconds as if I'm answering. Hermione says without looking up: \"Ask me what.\" Ron: \"Nothing.\" Hermione looks up at the camera: \"It's the light in the hall. Ask anyone.\" and goes back to writing. Ron looks at the camera and says nothing. Two seconds of her quill scratching and him sitting back."),
+(4,"arithmancy AND divination","a quiet common room, parchment rustling and a finger tapping",
+ "Nobody speaks in this clip, there is no voice at all.",
+ "A wooden table with two handwritten timetables side by side, both headed Hermione Granger, a third one lying upside down further back, a pewter goblet and a quill. My own hand in the frame. For the first two seconds my finger rests on the word Arithmancy on the left sheet. Then it slides across to the word Divination on the right sheet, taps it twice, goes back to Arithmancy, and taps again. My hand picks up both sheets, holds them side by side close to the lens so both entries are readable, then lays them back down. Two seconds of the hand resting flat between the two sheets. The camera stays low over the table the whole time."),
+(5,"we followed her","a stone stairwell, footsteps and whispering",
+ "Only Ron Weasley and Harry Potter speak, each looks at the camera when speaking so their lips are visible moving.",
+ "A stone spiral staircase. Hermione Granger climbs ahead with her bag, seen from behind. Two steps behind her Harry Potter walks under the silvery invisibility cloak, and Ron Weasley next to him looks back over his shoulder at the camera. The banister blurred in the foreground. For the first two seconds all three keep climbing. Then Ron whispers toward the camera: \"Get down.\" He listens for two seconds as if I'm answering. Harry whispers from under the cloak: \"She's not looking.\" Ron: \"Shh.\" Above them Hermione stops on the landing, both boys freeze. She takes a small gold chain out from under her collar, looks at it, and turns the corner. Ron whispers: \"Go. Go.\" Two seconds of the two hurrying up after her, the camera following."),
+]
+clips=[dict(n=n,title=t,attach="Startframe = Bild „"+t+"“",note="Hermine",img=S.format(audio=a,speak=sp,scene=sc)) for (n,t,a,sp,sc) in V]
+WORLDS=[dict(key="hp",name="Wizarding Hermione Videos",clips=clips)]
+d=json.dumps(WORLDS,ensure_ascii=False).replace('</','<\\/')
+h=open('/home/user/claude-trade/snaps/prompts/batch-02-hp-videos.html',encoding='utf-8').read()
+h=h.replace('<title>Wizarding Videos 02</title>','<title>Wizarding Hermione Startframe Videos</title>')
+h=re.sub(r"const DATA = .*?;\nconst INSTR", lambda m:"const DATA = "+d+";\nconst INSTR", h, flags=re.S)
+h=re.sub(r"const INSTR = \(name\)=>`.*?`;", lambda m: "const INSTR = (name)=>`ANLEITUNG FÜR FLOW – WIZARDING WORLD, HERMINE-FOLGE, VIDEO-PROMPTS MIT STARTFRAME\n10 Sekunden pro Clip, 9:16. Für jeden Clip das Startframe-Bild mit derselben Caption nehmen und den VIDEO-Prompt eingeben.\nDialoge auf Englisch mit britischem Akzent. Der Kamerahalter spricht nie. Balken bleibt stehen.\n`;", h, flags=re.S)
+h=h.replace('Wizarding World Batch 02, alle 18 Video-Prompts. Startframe ist jeweils das fertige Bild mit derselben Caption.','Wizarding World, „hermione is in two places“, Version mit Startframes: Video-Prompts auf die fertigen Bilder geschrieben. Weitere Clips kommen dazu, sobald Bilder da sind.')
+h=h.replace("${c.note.replace('Video ','V')}·${String(c.n).padStart(2,'0')}","Clip ${String(c.n).padStart(2,'0')}")
+open('hp-hermione-sf-videos.html','w',encoding='utf-8').write(h)
+print(len(clips))
