@@ -3,7 +3,7 @@ S=("Candid first-person video from my own eye level, as if I just raised my old 
 "2015 smartphone video quality: soft focus, visible noise and slight compression, motion blur, uneven handheld framing that shakes in my hand, people cut off at the edges, no flash, no filter, audio like a phone microphone with {audio}. "
 "The person holding the camera never speaks and makes no sound. {speak} All dialogue is spoken in English with natural British accents, casual teenage talk. No caption, no text overlay, no bar on the video. "
 "{scene} Vertical 9:16. No watermark, no visible phone or camera.")
-H="the 14-year-old girl with big bushy brown hair, a normal mouth and a red-gold tie"; R="the lanky 14-year-old boy with thick straight bright red hair cut in a heavy fringe over his forehead, a long pale face covered in freckles, small blue eyes, a long nose, sticking-out ears, a hand-knitted maroon jumper under his open black robe and a red-gold tie"; HA="the slight 14-year-old boy with untidy black hair, round wire glasses and a thin lightning-shaped scar on his forehead"
+H="the 14-year-old girl with big bushy brown hair, a normal mouth and a red-gold tie"; R="the 14-year-old boy with straight red hair, freckles, a maroon knitted jumper and a red-gold tie"; HA="the slight 14-year-old boy with untidy black hair, round wire glasses and a thin lightning-shaped scar on his forehead"
 SN="the pale teacher in his forties with greasy chin-length black hair, a hooked nose and black robes buttoned to the throat"
 V=[
 (1,"hermione is in two places","over my breakfast","the echoing chatter of a huge hall, cutlery on tin plates and someone chewing",
