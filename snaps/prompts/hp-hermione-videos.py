@@ -3,7 +3,7 @@ S=("Candid first-person video from my own eye level, as if I just raised my old 
 "2015 smartphone video quality: soft focus, visible noise and slight compression, motion blur, uneven handheld framing that shakes in my hand, people cut off at the edges, no flash, no filter, audio like a phone microphone with {audio}. "
 "The person holding the camera never speaks and makes no sound. {speak} All dialogue is spoken in English with natural British accents, casual teenage talk. No caption, no text overlay, no bar on the video. "
 "{scene} Vertical 9:16. No watermark, no visible phone or camera.")
-H="the girl with bushy brown hair and a red-gold tie"; R="the tall ginger boy with a red-gold tie"; HA="the boy with round glasses and messy black hair"
+H="the girl with big bushy brown hair, slightly prominent front teeth and a red-gold tie"; R="the lanky ginger boy with straight bright orange hair in a shaggy fringe, a pale freckled face, a long nose and a red-gold tie"; HA="the slight boy with untidy black hair, round wire glasses and a thin lightning-shaped scar on his forehead"
 SN="the pale teacher with greasy chin-length black hair, a hooked nose and black robes buttoned to the throat"
 V=[
 (1,"hermione is in two places","over my breakfast","the echoing chatter of a huge hall, cutlery on tin plates and someone chewing",
