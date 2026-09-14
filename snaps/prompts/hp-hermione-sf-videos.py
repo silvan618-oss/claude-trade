@@ -32,7 +32,7 @@ V=[
  "Only Professor Snape speaks, and he faces the camera when speaking so his lips are visible moving.",
  "The potions dungeon, candles, shelves of jars, rows of students at cauldrons seen from behind. At the front Professor Snape stands with a parchment register in his hands. In front of me Hermione Granger stirs her cauldron with her head down. My own cauldron steams blurred in the foreground. For the first two seconds Snape's eyes travel along the rows, lips moving silently, counting. Then he looks up toward the camera and says slowly: \"Twenty-five.\" He listens for two seconds as if I'm answering. He looks down at the register, back up: \"There are twenty-four names on this list.\" He walks slowly down the aisle between the cauldrons, stops beside Hermione and looks down at her. She keeps stirring. He says: \"Miss Granger. See me after.\" She nods without looking up. Two seconds of him standing there and the cauldrons bubbling."),
 ]
-clips=[dict(n=n,title=t,attach="Startframe = Bild „"+t+"“",note="Hermine",img=S.format(audio=a,speak=sp,scene=sc)) for (n,t,a,sp,sc) in V]
+clips=[dict(n=n,title=t,attach="Startframe = Bild „"+t+"“",note="Hermine",img=S.format(audio=a,speak=sp,scene=sc)) for (n,t,a,sp,sc) in sorted(V)]
 WORLDS=[dict(key="hp",name="Wizarding Hermione Videos",clips=clips)]
 d=json.dumps(WORLDS,ensure_ascii=False).replace('</','<\\/')
 h=open('/home/user/claude-trade/snaps/prompts/batch-02-hp-videos.html',encoding='utf-8').read()
